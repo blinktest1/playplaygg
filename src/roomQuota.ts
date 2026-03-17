@@ -1,21 +1,47 @@
 /**
- * 按群房间配额：支持 Redis 持久化（20 万月活）
+ * Per-chat room quota with atomic Redis operations.
+ * Uses Lua scripts to prevent race conditions under concurrent access.
  */
 
 import { getRedis } from './state/redisClient';
 import { config } from './config';
 
-export type RoomGameType = 'undercover' | 'word_bomb' | 'dice_guess' | 'bunker' | 'alias';
+export type RoomGameType = 'undercover';
 
 const MAX_ROOMS_PER_CHAT = 20;
 const KEY_PREFIX = 'quota:chat:';
+const TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
-// 内存回退
+// In-memory fallback
 const roomsPerChat = new Map<number, number>();
 
 function redisKey(chatId: number): string {
   return `${KEY_PREFIX}${chatId}`;
 }
+
+// Lua: atomic check-and-increment. Returns 1 if acquired, 0 if full.
+const LUA_TRY_ACQUIRE = `
+  local key = KEYS[1]
+  local max = tonumber(ARGV[1])
+  local ttl = tonumber(ARGV[2])
+  local cur = tonumber(redis.call('GET', key) or '0')
+  if cur >= max then return 0 end
+  redis.call('INCR', key)
+  redis.call('EXPIRE', key, ttl)
+  return 1
+`;
+
+// Lua: atomic decrement (floor at 0). Returns new value.
+const LUA_RELEASE = `
+  local key = KEYS[1]
+  local cur = tonumber(redis.call('GET', key) or '0')
+  if cur <= 0 then
+    redis.call('DEL', key)
+    return 0
+  end
+  local nv = redis.call('DECR', key)
+  return nv
+`;
 
 export async function getChatRoomUsage(chatId: number): Promise<{ used: number; max: number }> {
   if (config.useRedis) {
@@ -33,13 +59,14 @@ export async function tryAcquireRoom(chatId: number, _game: RoomGameType): Promi
   if (config.useRedis) {
     const redis = getRedis();
     if (redis) {
-      const key = redisKey(chatId);
-      const cur = await redis.get(key);
-      const used = cur ? parseInt(cur, 10) : 0;
-      if (used >= MAX_ROOMS_PER_CHAT) return false;
-      await redis.incr(key);
-      await redis.expire(key, 60 * 60 * 24 * 7); // 7 天 TTL
-      return true;
+      const result = await redis.eval(
+        LUA_TRY_ACQUIRE,
+        1,
+        redisKey(chatId),
+        String(MAX_ROOMS_PER_CHAT),
+        String(TTL_SECONDS),
+      );
+      return result === 1;
     }
   }
   const used = roomsPerChat.get(chatId) ?? 0;
@@ -52,21 +79,10 @@ export async function releaseRoom(chatId: number, _game: RoomGameType): Promise<
   if (config.useRedis) {
     const redis = getRedis();
     if (redis) {
-      const key = redisKey(chatId);
-      const v = await redis.get(key);
-      const used = v ? parseInt(v, 10) : 0;
-      if (used <= 0) {
-        await redis.del(key);
-        return;
-      }
-      await redis.decr(key);
+      await redis.eval(LUA_RELEASE, 1, redisKey(chatId));
       return;
     }
   }
   const used = roomsPerChat.get(chatId) ?? 0;
-  if (used <= 0) {
-    roomsPerChat.set(chatId, 0);
-    return;
-  }
-  roomsPerChat.set(chatId, used - 1);
+  roomsPerChat.set(chatId, Math.max(0, used - 1));
 }

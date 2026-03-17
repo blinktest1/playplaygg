@@ -4,7 +4,7 @@ import { getTexts } from '../i18n';
 import { withGrowthButtons } from '../growth';
 import { tryAcquireRoom, releaseRoom, getChatRoomUsage } from '../roomQuota';
 import { EMOJI_POOL, activeVotingEmojis, releaseVotingEmojis, normalizeVoteText } from './votingEmojis';
-import { createRoom, endRoom, getActiveRooms, getAllRoomsByChat, getRoom } from './undercover/rooms';
+import { createRoom, endRoom, getActiveRooms, getAllRoomsByChat, getRoom, saveRoom } from './undercover/redisRooms';
 import {
   assignRolesAndWords,
   pickWordPair,
@@ -126,9 +126,10 @@ function formatSpeakingOrder(players: UndercoverPlayer[], currentIndex: number):
 /** 轮询：检查是否有「应已开始但未开始」的等待中房间（补偿 setTimeout 未触发的情况） */
 function startUndercoverPolling(bot: Telegraf<Context>) {
   const INTERVAL_MS = 10_000;
-  setInterval(() => {
+  setInterval(async () => {
     const now = Date.now();
-    for (const [chatId, list] of getAllRoomsByChat()) {
+    const allRooms = await getAllRoomsByChat();
+    for (const [chatId, list] of allRooms) {
       for (const room of list) {
         if (
           room.active &&
@@ -137,6 +138,7 @@ function startUndercoverPolling(bot: Telegraf<Context>) {
           now - room.createdAt >= COUNTDOWN_MS
         ) {
           room.createdAt = undefined;
+          await saveRoom(room);
           void startUndercoverGame(bot, room).catch((err) =>
             // eslint-disable-next-line no-console
             console.error('谁是卧底轮询启动异常', err),
@@ -171,7 +173,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
         return;
       }
 
-      const newRoom = createRoom(chatId);
+      const newRoom = await createRoom(chatId);
       if (!newRoom) {
         const usage = await getChatRoomUsage(chatId);
         await ctx.reply(t.undercover.roomFull(usage.used, usage.max));
@@ -200,6 +202,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
 
       const sent = await sendRoomMessage(bot, chatId, newRoom.roomId, joinText);
       if (sent?.message_id) newRoom.recruitmentMessageId = sent.message_id;
+      await saveRoom(newRoom);
 
       // 报名倒计时：只在 10s 时提醒一次
       setChatTimeout(chatId, timerKey(newRoom, 'countdown_10'), async () => {
@@ -212,7 +215,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
       const roomId = newRoom.roomId;
       setChatTimeout(chatId, timerKey(newRoom, 'start'), () => {
         void (async () => {
-          const room = getRoom(roomChatId, roomId);
+          const room = await getRoom(roomChatId, roomId);
           if (!room || !room.active) {
             try {
               const t = getTexts(await getChatLanguage(roomChatId));
@@ -267,7 +270,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
         return;
       }
 
-      const room = getRoom(chatId, roomId);
+      const room = await getRoom(chatId, roomId);
       if (!room || !room.active) {
         await ctx.reply(t.common.roomClosedOrNotFound);
         return;
@@ -305,6 +308,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
         username: from.username,
         alive: true,
       });
+      await saveRoom(room);
 
       await ctx.reply(joinMsg, { parse_mode: 'HTML' });
 
@@ -356,7 +360,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
       const roomId = Number(ctx.match[2]);
       if (!Number.isFinite(chatId) || !Number.isFinite(roomId)) return;
       const t = getTexts(await getChatLanguage(chatId));
-      const room = getRoom(chatId, roomId);
+      const room = await getRoom(chatId, roomId);
       if (!room || !room.active) {
         await ctx.answerCbQuery(t.undercover.roundEnded, { show_alert: false });
         return;
@@ -413,7 +417,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
     const btnEndGame = t.undercover.btnEndGame;
 
     if (text === btnEndGame || text === currentUndercoverVotingEndGameByChat.get(chatId)) {
-      const list = getActiveRooms(chatId);
+      const list = await getActiveRooms(chatId);
       const votingRoom = list.find((r) => r.active && r.state.phase === 'voting');
       if (votingRoom) {
         const mapKey = `undercover_${chatId}_${votingRoom.roomId}_vote`;
@@ -430,13 +434,14 @@ export function registerUndercover(bot: Telegraf<Context>) {
     if (activeVotingEmojis.has(voteKey)) {
       const info = activeVotingEmojis.get(voteKey)!;
       if (info.game !== 'undercover') return next();
-      const room = getRoom(info.chatId, info.roomId);
+      const room = await getRoom(info.chatId, info.roomId);
       if (!room || room.state.phase !== 'voting' || room.chatId !== chatId) return next();
       const voterId = ctx.from?.id;
       if (!voterId) return next();
       const voter = room.state.players.find((p) => p.userId === voterId && p.alive);
       if (!voter) return next();
       room.state.votes[voterId] = info.targetId;
+      await saveRoom(room);
       const voteConfirm = t.undercover.voteDone(info.targetName);
       await ctx.reply(voteConfirm, {
         reply_parameters: { message_id: ctx.message.message_id },
@@ -464,7 +469,7 @@ async function startUndercoverGame(bot: Telegraf<Context>, room: UndercoverRoom)
       ? t.undercover.startCancelledWithCount(players.length, MIN_PLAYERS)
       : t.undercover.startCancelled;
     await sendRoomMessage(bot, chatId, room.roomId, msg);
-    endRoom(room);
+    await endRoom(room);
     await releaseRoom(chatId, 'undercover');
     return;
   }
@@ -489,6 +494,7 @@ async function startUndercoverGame(bot: Telegraf<Context>, room: UndercoverRoom)
     votes: {},
     roundNumber: 1,
   };
+  await saveRoom(room);
 
   // 只发词，不透露身份：所有人用同一套中性文案
   const blankLabel = t.undercover.blankWord ?? '(Blank)';
@@ -526,6 +532,7 @@ async function beginSpeakingRound(bot: Telegraf<Context>, room: UndercoverRoom) 
   room.state.phase = 'speaking';
   room.state.speakingIndex = 0;
   room.state.votes = {};
+  await saveRoom(room);
 
   // 不再单独发顺序公告，直接进入第一个人的发言（顺序在每条发言消息里显示）
   await runSpeakingTurn(bot, room);
@@ -557,9 +564,10 @@ async function runSpeakingTurn(bot: Telegraf<Context>, room: UndercoverRoom) {
   });
 
   await waitWithSkipUndercover(chatId, room.roomId, 'speaking', SPEAK_TIME_MS, current.userId);
-  const stillRoom = getRoom(chatId, room.roomId);
+  const stillRoom = await getRoom(chatId, room.roomId);
   if (!stillRoom || !stillRoom.active) return;
   room.state.speakingIndex += 1;
+  await saveRoom(room);
   await runSpeakingTurn(bot, room);
 }
 
@@ -569,6 +577,7 @@ async function startFreeTalk(bot: Telegraf<Context>, room: UndercoverRoom) {
   const t = getTexts(lang);
 
   room.state.phase = 'free_talk';
+  await saveRoom(room);
 
   // 自由讨论：一条消息搞定
   const btnEndRound = t.undercover.btnEndRound;
@@ -580,7 +589,7 @@ async function startFreeTalk(bot: Telegraf<Context>, room: UndercoverRoom) {
   });
 
   await waitWithSkipUndercover(chatId, room.roomId, 'freetalk', FREE_TALK_MS);
-  const stillRoom = getRoom(chatId, room.roomId);
+  const stillRoom = await getRoom(chatId, room.roomId);
   if (!stillRoom || !stillRoom.active) return;
   await startVoting(bot, room);
 }
@@ -592,6 +601,7 @@ async function startVoting(bot: Telegraf<Context>, room: UndercoverRoom) {
 
   room.state.phase = 'voting';
   room.state.votes = {};
+  await saveRoom(room);
 
   const alive = room.state.players.filter((p) => p.alive);
   // 首次进入投票阶段时分配 emojiByPlayerId，整局游戏内保持不变；
@@ -604,7 +614,7 @@ async function startVoting(bot: Telegraf<Context>, room: UndercoverRoom) {
       const availableEmojis = EMOJI_POOL.filter((e) => !activeVotingEmojis.has(normalizeVoteText(e)));
       if (availableEmojis.length === 0) {
         await sendRoomMessage(bot, chatId, room.roomId, t.undercover.votingEnded ?? '投票资源不足，本局结束。');
-        endRoom(room);
+        await endRoom(room);
         await releaseRoom(chatId, 'undercover');
         return;
       }
@@ -621,6 +631,7 @@ async function startVoting(bot: Telegraf<Context>, room: UndercoverRoom) {
         targetName: p.name,
       });
     }
+    await saveRoom(room);
   }
 
   const btnEndGame = t.undercover.btnEndGame;
@@ -652,7 +663,7 @@ async function startVoting(bot: Telegraf<Context>, room: UndercoverRoom) {
     releaseVotingEmojis(room.votingEmojis);
     room.votingEmojis = undefined;
     room.emojiByPlayerId = undefined;
-    endRoom(room);
+    await endRoom(room);
     await releaseRoom(chatId, 'undercover');
     const endMsg = t.undercover.gameForceEnded ?? 'Game force-ended.';
     await sendRoomMessage(bot, chatId, room.roomId, endMsg, { reply_markup: { remove_keyboard: true } });
@@ -731,7 +742,7 @@ async function tallyVotesAndProceed(bot: Telegraf<Context>, room: UndercoverRoom
     releaseVotingEmojis(room.votingEmojis);
     room.votingEmojis = undefined;
     room.emojiByPlayerId = undefined;
-    endRoom(room);
+    await endRoom(room);
     await releaseRoom(chatId, 'undercover');
     return;
   }
@@ -753,13 +764,16 @@ async function tallyVotesAndProceed(bot: Telegraf<Context>, room: UndercoverRoom
     const stillAlive = state.players.filter((p) => p.alive);
     // 这里不做胜负判定，直接进入下一轮发言
     state.roundNumber += 1;
+    await saveRoom(room);
     await sendRoomMessage(bot, chatId, room.roomId, `${t.undercover.nextRound} ⏱ 5s`, {
       reply_markup: { remove_keyboard: true },
     });
     setChatTimeout(chatId, timerKey(room, 'next_round'), () => {
-      const stillRoom2 = getRoom(chatId, room.roomId);
+      void (async () => {
+      const stillRoom2 = await getRoom(chatId, room.roomId);
       if (!stillRoom2 || !stillRoom2.active) return;
-      beginSpeakingRound(bot, stillRoom2).catch((err) =>
+      await beginSpeakingRound(bot, stillRoom2);
+      })().catch((err) =>
         console.error('谁是卧底下一轮启动异常', err),
       );
     }, 5_000);
@@ -773,6 +787,7 @@ async function tallyVotesAndProceed(bot: Telegraf<Context>, room: UndercoverRoom
   if (!eliminated) return;
 
   eliminated.alive = false;
+  await saveRoom(room);
 
   await sendRoomMessage(bot, chatId, room.roomId, t.undercover.eliminated(eliminated.name), {
     reply_markup: { remove_keyboard: true },
@@ -796,19 +811,22 @@ async function tallyVotesAndProceed(bot: Telegraf<Context>, room: UndercoverRoom
       { reply_markup: withGrowthButtons(t).reply_markup, parse_mode: 'HTML' },
     );
     await sendRoomMessage(bot, chatId, room.roomId, report, { parse_mode: 'HTML' });
-    endRoom(room);
+    await endRoom(room);
     await releaseRoom(chatId, 'undercover');
     return;
   }
 
   state.roundNumber += 1;
+  await saveRoom(room);
   await sendRoomMessage(bot, chatId, room.roomId, `${t.undercover.nextRound} ⏱ 5s`, {
     reply_markup: { remove_keyboard: true },
   });
   setChatTimeout(chatId, timerKey(room, 'next_round'), () => {
-    const stillRoom2 = getRoom(chatId, room.roomId);
+    void (async () => {
+    const stillRoom2 = await getRoom(chatId, room.roomId);
     if (!stillRoom2 || !stillRoom2.active) return;
-    beginSpeakingRound(bot, stillRoom2).catch((err) =>
+    await beginSpeakingRound(bot, stillRoom2);
+    })().catch((err) =>
       console.error('谁是卧底下一轮启动异常', err),
     );
   }, 5_000);
