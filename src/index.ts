@@ -183,7 +183,7 @@ bot.on('text', async (ctx, next) => {
       message.entities.some((e) => {
         if (e.type !== 'mention') return false;
         const mentionText = text.slice(e.offset, e.offset + e.length);
-        return mentionText.toLowerCase().includes('playplayggbot');
+        return mentionText.toLowerCase().includes('blink_aigames_bot');
       });
 
     if (chatType === 'group' || chatType === 'supergroup') {

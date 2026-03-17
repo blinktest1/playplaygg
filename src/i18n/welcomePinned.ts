@@ -1,7 +1,7 @@
 import type { LanguageCode } from '../state';
 
 export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
-  ru: `🎮 <b>Добро пожаловать в игровой парк @playplayggbot!</b>
+  ru: `🎮 <b>Добро пожаловать в @Blink_AIgames_bot!</b>
 
 Хотите мгновенно зажечь в своем сообществе? 🔥 Просто пригласите меня в группу и наберите <b>/playgg</b>, чтобы сразу же начать веселую вечеринку! 🎲✨
 
@@ -9,17 +9,9 @@ export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
 ─────── ✦ ───────
 
 
-Партнеры:
+🚀 <b>Душевные знакомства:</b> @Blink_AImatch_Bot`,
 
-🚀 <b>Душевные знакомства:</b> @Blink_AImatch_Bot
-
-💬 <b>AI-подруга:</b> @KissMe_AI_Bot
-
-🎨 <b>Хардкорная графика:</b> @DreamAIGCBot
-
-✨ <b>Удобное создание изображений:</b> @KissMeStudioBot`,
-
-  zh: `🎮 <b>欢迎来到 @playplayggbot 游戏乐园！</b>
+  zh: `🎮 <b>欢迎来到 @Blink_AIgames_bot 游戏乐园！</b>
 
 想让你的社区瞬间燥起来吗？🔥 只需把我邀请进群，发送 <b>/playgg</b> 即可立刻开启派对狂欢！🎲✨
 
@@ -27,17 +19,9 @@ export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
 ─────── ✦ ───────
 
 
-合作伙伴:
+🚀 <b>灵魂交友:</b> @Blink_AImatch_Bot`,
 
-🚀 <b>灵魂交友:</b> @Blink_AImatch_Bot
-
-💬 <b>AI 女友:</b> @KissMe_AI_Bot
-
-🎨 <b>硬核制图:</b> @DreamAIGCBot
-
-✨ <b>便捷生图:</b> @KissMeStudioBot`,
-
-  en: `🎮 <b>Welcome to the @playplayggbot Gaming Hub!</b>
+  en: `🎮 <b>Welcome to @Blink_AIgames_bot!</b>
 
 Want to hype up your community instantly? 🔥 Just invite me to the group and type <b>/playgg</b> to start the party right away! 🎲✨
 
@@ -45,15 +29,7 @@ Want to hype up your community instantly? 🔥 Just invite me to the group and t
 ─────── ✦ ───────
 
 
-Our Partners:
-
-🚀 <b>Soul Match:</b> @Blink_AImatch_Bot
-
-💬 <b>AI Companion:</b> @KissMe_AI_Bot
-
-🎨 <b>Pro Image Gen:</b> @DreamAIGCBot
-
-✨ <b>Easy Art Creator:</b> @KissMeStudioBot`,
+🚀 <b>Soul Match:</b> @Blink_AImatch_Bot`,
 };
 
 const FALLBACK_LANG: LanguageCode = 'ru';

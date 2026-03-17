@@ -4,7 +4,7 @@ export const ruTexts: any = {
     back: '🔙 Назад',
   },
   mainMenu: {
-    welcome: 'Добро пожаловать в @playplayggbot — давайте играть!',
+    welcome: 'Добро пожаловать в @Blink_AIgames_bot — давайте играть!',
     btnUndercover: 'Кто шпион',
     btnCancel: 'Отмена',
     cancelAnswer: 'Ок, я в фоне. Нужна игра — /playgg!',
@@ -25,7 +25,7 @@ export const ruTexts: any = {
     roomLabel: (roomId: number) => `🎪 Комната ${roomId}`,
   },
   groupWelcome: {
-    title: '🎮 Добро пожаловать в @playplayggbot!',
+    title: '🎮 Добро пожаловать в @Blink_AIgames_bot!',
     intro: 'Играйте в «Кто шпион» и другие игры. Отправьте /playgg!',
     separator: '─────── ✦ ───────',
     partners: 'Партнёры: Blink — больше общения и игр!',

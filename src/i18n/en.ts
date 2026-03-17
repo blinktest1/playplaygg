@@ -4,7 +4,7 @@ export const enTexts: any = {
     back: '🔙 Back',
   },
   mainMenu: {
-    welcome: "Welcome to @playplayggbot — let's play!",
+    welcome: "Welcome to @Blink_AIgames_bot — let's play!",
     btnUndercover: 'Undercover',
     btnCancel: 'Cancel',
     cancelAnswer: "Okay, I'll stay in the background. Need a game? Just send /playgg!",
@@ -25,7 +25,7 @@ export const enTexts: any = {
     roomLabel: (roomId: number) => `🎪 Room ${roomId}`,
   },
   groupWelcome: {
-    title: '🎮 Welcome to @playplayggbot',
+    title: '🎮 Welcome to @Blink_AIgames_bot',
     intro: 'Play Undercover and more group games. Send /playgg to open the game menu.',
     separator: '—————————————',
     partners: 'Our partners: Blink — more chat and games!',

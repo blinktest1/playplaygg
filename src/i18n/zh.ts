@@ -4,7 +4,7 @@ export const zhTexts: any = {
     back: '🔙 返回',
   },
   mainMenu: {
-    welcome: '欢迎使用 @playplayggbot，一起来玩！',
+    welcome: '欢迎使用 @Blink_AIgames_bot，一起来玩！',
     btnUndercover: '谁是卧底',
     btnCancel: '取消',
     cancelAnswer: '好的，后台待命。发送 /playgg 开始游戏！',
@@ -25,7 +25,7 @@ export const zhTexts: any = {
     roomLabel: (roomId: number) => `🎪 ${roomId}号房`,
   },
   groupWelcome: {
-    title: '🎮 欢迎加入 @playplayggbot',
+    title: '🎮 欢迎加入 @Blink_AIgames_bot',
     intro: '玩谁是卧底等群游戏。发送 /playgg 开始！',
     separator: '—————————————',
     partners: '合作伙伴：Blink — 更多社交与游戏！',
