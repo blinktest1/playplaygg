@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "esModuleInterop": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "types": ["node"]
+  },
+  "include": [
+    "src/config.ts",
+    "src/index.ts",
+    "src/growth.ts",
+    "src/roomQuota.ts",
+    "src/state.ts",
+    "src/state/**/*.ts",
+    "src/i18n/index.ts",
+    "src/i18n/types.ts",
+    "src/i18n/privateStartMsg.ts",
+    "src/i18n/welcomePinned.ts",
+    "src/i18n/ru.ts",
+    "src/i18n/en.ts",
+    "src/i18n/zh.ts",
+    "src/games/undercover.ts",
+    "src/games/undercover/**/*.ts",
+    "src/games/undercoverWords.ts",
+    "src/games/votingEmojis.ts",
+    "src/games/core/**/*.ts"
+  ]
+}
