@@ -115,7 +115,8 @@ bot.catch(async (err, ctx) => {
   }
 });
 
-bot.command('play', async (ctx, next) => {
+// Keep a silent legacy fallback to avoid command outages during rollout.
+bot.command(['play', 'playgg'], async (ctx, next) => {
   const chat = ctx.chat;
   if (!chat) return next();
 
