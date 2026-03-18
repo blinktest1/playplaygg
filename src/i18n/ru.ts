@@ -1,4 +1,6 @@
-export const ruTexts: any = {
+import type { I18nTexts } from './types';
+
+export const ruTexts: I18nTexts = {
   i18n: {
     chooseLanguage: 'Выберите язык',
     back: '🔙 Назад',
@@ -7,10 +9,11 @@ export const ruTexts: any = {
     welcome: 'Добро пожаловать в @Blink_AIgames_bot — давайте играть!',
     btnUndercover: 'Кто шпион',
     btnCancel: 'Отмена',
-    cancelAnswer: 'Ок, я в фоне. Нужна игра — /playgg!',
-    usePlayggForLatestMenu: 'Старое меню. Отправьте /playgg.',
-    privatePlayggHint: '🎮 Добавьте меня в группу и отправьте /playgg!',
-    groupUsePlaygg: '👉 В группе: /playgg для меню игр.',
+    cancelAnswer: 'Ок, я в фоне. Нужна игра — /play!',
+    usePlayggForLatestMenu: 'Старое меню. Отправьте /play.',
+    privatePlayggHint: '🎮 Добавьте меня в группу и отправьте /play!',
+    groupUsePlaygg: '👉 В группе: /play для меню игр.',
+    btnTruthOrDare: '🎯 Правда или Действие',
     btnLanguage: '🌐 Язык',
   },
   errors: {
@@ -26,7 +29,7 @@ export const ruTexts: any = {
   },
   groupWelcome: {
     title: '🎮 Добро пожаловать в @Blink_AIgames_bot!',
-    intro: 'Играйте в «Кто шпион» и другие игры. Отправьте /playgg!',
+    intro: 'Играйте в «Кто шпион» и другие игры. Отправьте /play!',
     separator: '─────── ✦ ───────',
     partners: 'Партнёры: Blink — больше общения и игр!',
   },
@@ -41,8 +44,8 @@ export const ruTexts: any = {
       '👥 Игроки: 5–12\n' +
       '🕹 Ход игры:\n' +
       '  1. Получите слово в личке бота. У шпионов слово немного другое! 🤫\n' +
-      '  2. По очереди описывайте слово за 25 сек — не называйте напрямую!\n' +
-      '  3. 45 сек свободной дискуссии — ловите шпиона!\n' +
+      '  2. По очереди описывайте слово за 40 сек — не называйте напрямую!\n' +
+      '  3. 120 сек свободной дискуссии — ловите шпиона!\n' +
       '  4. Голосование: нажмите эмодзи-кнопку за 20 сек.\n' +
       '❌ Если никто не голосует — игра завершается!\n' +
       '🎭 Роли: 5–6 → 1 шпион | 7–9 → 2 | 10–12 → 3\n' +
@@ -95,7 +98,53 @@ export const ruTexts: any = {
     alreadyEnded: 'Уже завершено.',
     notYourTurn: 'Не ваш ход!',
     gameForceEnded: 'Игра принудительно завершена.',
+    invalidVoteTarget: 'Недопустимая цель голосования.',
+    cannotVoteSelf: 'Нельзя голосовать за себя!',
+    returnToGroup: 'Вернуться в группу',
+    btnPlayAgain: '🔄 Ещё раз',
+    civiliansLabel: 'Мирные',
+    undercoverLabel: 'Шпионы',
+    civiliansWinSubtitle: 'Все шпионы раскрыты!',
+    undercoverWinSubtitle: 'Мирных больше не осталось...',
+    reportGameOver: '🚩 Игра окончена!',
+    reportSpyLabel: '🕵️‍♂️ Шпионы',
+    reportCivLabel: '👨‍🌾 Мирные',
+    reportBlankWord: '🚫 Пусто',
+    reportNone: '(нет)',
+    reportWinLine: (winnerLabel: string) => `🏆 [ ${winnerLabel} ] Победа!`,
+  },
+  truthOrDare: {
+    chooseTier: '🎯 <b>Правда или Действие</b>\n\nВыберите режим:',
+    tierIcebreaker: '❄️ Лайт',
+    tierAdvanced: '🔮 Без фильтров',
+    tierSpicy: '🌙 После полуночи (18+)',
+    recruitText: (min: number, max: number, tierLabel: string) =>
+      `🎯 <b>Правда или Действие</b>  ${tierLabel}\n\nНажмите, чтобы присоединиться! ${min}–${max} игроков.`,
+    recruitTextWithPlayers: (min: number, max: number, count: number, names: string, tierLabel: string) =>
+      `🎯 <b>Правда или Действие</b>  ${tierLabel}\n\nУже ${count}: ${names}\n\n${min}–${max} игроков, присоединяйтесь!`,
+    btnJoin: '✋ Вступить',
+    btnStart: '▶ Начать',
+    btnTruth: '💬 Правда',
+    btnDare: '🔥 Действие',
+    btnSkip: '⏭ Пропустить',
+    btnNext: '👉 Далее',
+    btnEndGame: '🛑 Закончить',
+    yourTurn: (name: string) => `Очередь <b>${name}</b> — выбирайте:`,
+    truthLabel: '💬 Правда',
+    dareLabel: '🔥 Действие',
+    questionFor: (name: string, label: string, question: string) =>
+      `${label} → <b>${name}</b>\n\n${question}`,
+    joined: 'Вы вступили!',
+    alreadyJoined: 'Вы уже в игре',
+    alreadyRunning: 'Игра уже идёт. Сначала завершите текущую.',
+    alreadyStarted: 'Игра уже началась',
+    sessionEnded: 'Игра завершена',
+    notYourTurn: 'Сейчас не ваша очередь',
+    notInGame: 'Вы не в этой игре',
+    notEnough: (current: number, required: number) => `Мало игроков (${current}/${required})`,
+    full: 'Игра заполнена',
+    gameStarted: (count: number, tierLabel: string) => `🎯 Правда или Действие! Игроков: ${count}. Режим: ${tierLabel}`,
+    gameEnded: '🎯 Правда или Действие завершена. До следующего раза!',
+    timeoutSkipped: (name: string) => `⏱ ${name} — время вышло, пропуск`,
   },
 };
-
-export type RuTexts = typeof ruTexts;

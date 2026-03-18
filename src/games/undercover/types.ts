@@ -24,7 +24,7 @@ export interface UndercoverState {
   undercoverWord: string;
   phase: UndercoverPhase;
   speakingIndex: number;
-  votes: Record<number, number>;
+  votes: Record<string, number>;
   roundNumber: number;
 }
 
@@ -36,14 +36,17 @@ export interface UndercoverRoom {
   createdAt?: number;
   recruitmentMessageId?: number;
   username?: string;
-  votingEmojis?: string[];
-  emojiByPlayerId?: Record<number, string>;
+  /** Unix ms deadline for current phase timeout. Persisted to Redis so polling can
+   *  resume games after process restart. undefined = no active deadline. */
+  phaseDeadline?: number;
+  /** Which phase the deadline belongs to, so polling knows what to do on expiry. */
+  phaseDeadlineType?: 'countdown' | 'speaking' | 'freetalk' | 'vote' | 'next_round';
 }
 
 export const MIN_PLAYERS = 5;
 export const MAX_PLAYERS = 12;
 export const COUNTDOWN_MS = 35_000;
-export const SPEAK_TIME_MS = 25_000;
-export const FREE_TALK_MS = 45_000;
+export const SPEAK_TIME_MS = 30_000;
+export const FREE_TALK_MS = 90_000;
 export const VOTE_TIMEOUT_MS = 20_000;
 export const MAX_ROOMS_PER_CHAT = 20;

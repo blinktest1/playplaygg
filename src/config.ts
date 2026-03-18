@@ -9,6 +9,7 @@ dotenv.config();
 
 const REDIS_URL = process.env.REDIS_URL ?? '';
 const WEBHOOK_URL = process.env.WEBHOOK_URL ?? ''; // 例如 https://yourdomain.com
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET ?? ''; // Telegram secret_token 校验
 const PORT = Number(process.env.PORT) || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN ?? '';
 
@@ -22,6 +23,7 @@ export const config = {
   BOT_TOKEN,
   REDIS_URL: REDIS_URL || 'redis://127.0.0.1:6379',
   WEBHOOK_URL,
+  WEBHOOK_SECRET,
   PORT,
   useRedis,
   useWebhook,

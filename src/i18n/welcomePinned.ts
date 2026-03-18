@@ -3,7 +3,7 @@ import type { LanguageCode } from '../state';
 export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
   ru: `🎮 <b>Добро пожаловать в @Blink_AIgames_bot!</b>
 
-Хотите мгновенно зажечь в своем сообществе? 🔥 Просто пригласите меня в группу и наберите <b>/playgg</b>, чтобы сразу же начать веселую вечеринку! 🎲✨
+Хотите мгновенно зажечь в своем сообществе? 🔥 Просто пригласите меня в группу и наберите <b>/play</b>, чтобы сразу же начать веселую вечеринку! 🎲✨
 
 
 ─────── ✦ ───────
@@ -13,7 +13,7 @@ export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
 
   zh: `🎮 <b>欢迎来到 @Blink_AIgames_bot 游戏乐园！</b>
 
-想让你的社区瞬间燥起来吗？🔥 只需把我邀请进群，发送 <b>/playgg</b> 即可立刻开启派对狂欢！🎲✨
+想让你的社区瞬间燥起来吗？🔥 只需把我邀请进群，发送 <b>/play</b> 即可立刻开启派对狂欢！🎲✨
 
 
 ─────── ✦ ───────
@@ -23,7 +23,7 @@ export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
 
   en: `🎮 <b>Welcome to @Blink_AIgames_bot!</b>
 
-Want to hype up your community instantly? 🔥 Just invite me to the group and type <b>/playgg</b> to start the party right away! 🎲✨
+Want to hype up your community instantly? 🔥 Just invite me to the group and type <b>/play</b> to start the party right away! 🎲✨
 
 
 ─────── ✦ ───────

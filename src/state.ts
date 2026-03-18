@@ -5,12 +5,14 @@
 
 import { config } from './config';
 import * as store from './state/store';
+import { LruMap } from './lruMap';
 
 export type { ChatState, ChatGameType, ChatPhase, LanguageCode, TimerKey } from './state/types';
 import type { ChatState, LanguageCode, TimerKey } from './state/types';
 
-const chatStates = new Map<number, ChatState>();
-const userLanguage = new Map<number, LanguageCode>();
+/** In-memory fallback stores — LRU-bounded to prevent OOM on long-running processes */
+const chatStates = new LruMap<number, ChatState>(10_000);
+const userLanguage = new LruMap<number, LanguageCode>(50_000);
 const timers = new Map<string, NodeJS.Timeout>();
 
 const ALLOWED_LANGS: LanguageCode[] = ['ru', 'en', 'zh'];

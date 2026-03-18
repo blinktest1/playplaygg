@@ -1,4 +1,6 @@
-export const zhTexts: any = {
+import type { I18nTexts } from './types';
+
+export const zhTexts: I18nTexts = {
   i18n: {
     chooseLanguage: '请选择语言',
     back: '🔙 返回',
@@ -7,10 +9,11 @@ export const zhTexts: any = {
     welcome: '欢迎使用 @Blink_AIgames_bot，一起来玩！',
     btnUndercover: '谁是卧底',
     btnCancel: '取消',
-    cancelAnswer: '好的，后台待命。发送 /playgg 开始游戏！',
-    usePlayggForLatestMenu: '旧版菜单，请发送 /playgg。',
-    privatePlayggHint: '🎮 请将我拉入群组，在群内发送 /playgg 开始游戏！',
-    groupUsePlaygg: '👉 群里请用 /playgg 唤出菜单。',
+    cancelAnswer: '好的，后台待命。发送 /play 开始游戏！',
+    usePlayggForLatestMenu: '旧版菜单，请发送 /play。',
+    privatePlayggHint: '🎮 请将我拉入群组，在群内发送 /play 开始游戏！',
+    groupUsePlaygg: '👉 群里请用 /play 唤出菜单。',
+    btnTruthOrDare: '🎯 真心话大冒险',
     btnLanguage: '🌐 语言',
   },
   errors: {
@@ -26,7 +29,7 @@ export const zhTexts: any = {
   },
   groupWelcome: {
     title: '🎮 欢迎加入 @Blink_AIgames_bot',
-    intro: '玩谁是卧底等群游戏。发送 /playgg 开始！',
+    intro: '玩谁是卧底等群游戏。发送 /play 开始！',
     separator: '—————————————',
     partners: '合作伙伴：Blink — 更多社交与游戏！',
   },
@@ -41,8 +44,8 @@ export const zhTexts: any = {
       '👥 5–12 人\n' +
       '🕹 流程：\n' +
       '  1. 点链接私聊 Bot 领词。卧底的词略有不同 🤫\n' +
-      '  2. 轮流描述，每人 25 秒，别说出原词！\n' +
-      '  3. 45 秒自由讨论，抓漏洞！\n' +
+      '  2. 轮流描述，每人 40 秒，别说出原词！\n' +
+      '  3. 120 秒自由讨论，抓漏洞！\n' +
       '  4. Emoji 投票 20 秒，投出嫌疑人。\n' +
       '❌ 无人投票则自动结束！\n' +
       '🎭 配置：5–6人→1卧底 | 7–9→2 | 10–12→3\n' +
@@ -95,7 +98,53 @@ export const zhTexts: any = {
     alreadyEnded: '已结束。',
     notYourTurn: '非本人不可点击！',
     gameForceEnded: '游戏已强制结束。',
+    invalidVoteTarget: '无效的投票目标。',
+    cannotVoteSelf: '不能投自己！',
+    returnToGroup: '返回群组',
+    btnPlayAgain: '🔄 再来一局',
+    civiliansLabel: '平民阵营',
+    undercoverLabel: '卧底阵营',
+    civiliansWinSubtitle: '卧底无处遁形！',
+    undercoverWinSubtitle: '平民已无力回天...',
+    reportGameOver: '🚩 游戏结束！',
+    reportSpyLabel: '🕵️‍♂️ 卧底',
+    reportCivLabel: '👨‍🌾 平民',
+    reportBlankWord: '🚫 白板',
+    reportNone: '（无）',
+    reportWinLine: (winnerLabel: string) => `🏆 [ ${winnerLabel} ] 完胜！`,
+  },
+  truthOrDare: {
+    chooseTier: '🎯 <b>真心话大冒险</b>\n\n选择模式：',
+    tierIcebreaker: '❄️ 轻松局',
+    tierAdvanced: '🔮 真话局',
+    tierSpicy: '🌙 夜间局 (18+)',
+    recruitText: (min: number, max: number, tierLabel: string) =>
+      `🎯 <b>真心话大冒险</b>  ${tierLabel}\n\n点击加入，${min}–${max} 人即可开始！`,
+    recruitTextWithPlayers: (min: number, max: number, count: number, names: string, tierLabel: string) =>
+      `🎯 <b>真心话大冒险</b>  ${tierLabel}\n\n已加入 ${count} 人：${names}\n\n${min}–${max} 人，点击加入！`,
+    btnJoin: '✋ 加入',
+    btnStart: '▶ 开始游戏',
+    btnTruth: '💬 真心话',
+    btnDare: '🔥 大冒险',
+    btnSkip: '⏭ 跳过',
+    btnNext: '👉 下一位',
+    btnEndGame: '🛑 结束游戏',
+    yourTurn: (name: string) => `轮到 <b>${name}</b>，请选择：`,
+    truthLabel: '💬 真心话',
+    dareLabel: '🔥 大冒险',
+    questionFor: (name: string, label: string, question: string) =>
+      `${label} → <b>${name}</b>\n\n${question}`,
+    joined: '已加入！',
+    alreadyJoined: '你已经加入了',
+    alreadyRunning: '已有一局正在进行，请先结束当前游戏。',
+    alreadyStarted: '游戏已经开始了',
+    sessionEnded: '游戏已结束',
+    notYourTurn: '现在不是你的回合',
+    notInGame: '你不在本局游戏中',
+    notEnough: (current: number, required: number) => `人数不足（${current}/${required}）`,
+    full: '人数已满',
+    gameStarted: (count: number, tierLabel: string) => `🎯 真心话大冒险开始！${count} 人参加。模式：${tierLabel}`,
+    gameEnded: '🎯 真心话大冒险结束，下次再玩！',
+    timeoutSkipped: (name: string) => `⏱ ${name} 超时，自动跳过`,
   },
 };
-
-export type ZhTexts = typeof zhTexts;

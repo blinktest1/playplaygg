@@ -4,6 +4,7 @@
 
 import Redis from 'ioredis';
 import { config } from '../config';
+import { logger, errMsg } from '../logger';
 
 let client: Redis | null = null;
 
@@ -19,15 +20,14 @@ export function getRedis(): Redis | null {
     lazyConnect: true,
   });
   client.on('error', (err: unknown) => {
-    // eslint-disable-next-line no-console
-    console.error('Redis error', err);
+    logger.error({ err: errMsg(err) }, 'Redis error');
   });
   return client;
 }
 
 export async function connectRedis(): Promise<Redis | null> {
   const redis = getRedis();
-  if (redis) await redis.connect().catch((e: unknown) => console.error('Redis connect failed', e));
+  if (redis) await redis.connect().catch((e: unknown) => logger.error({ err: errMsg(e) }, 'Redis connect failed'));
   return redis;
 }
 

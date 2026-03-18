@@ -1,6 +1,5 @@
 import http from 'node:http';
 import { Context, Markup, Telegraf } from 'telegraf';
-import dotenv from 'dotenv';
 import { config as appConfig } from './config';
 import { getTexts } from './i18n';
 import { connectRedis, closeRedis } from './state/redisClient';
@@ -15,18 +14,23 @@ import {
   type LanguageCode,
 } from './state';
 import { registerUndercover } from './games/undercover';
-import { isVotingEmoji } from './games/votingEmojis';
+import { registerTruthOrDare } from './games/truthordare';
+import { seedAllLanguages } from './games/undercover/wordStore';
+import { logger, errMsg } from './logger';
+import { patchBotWithRateLimiter } from './rateLimiterPatch';
+import { flushQueue } from './rateLimiter';
 
-dotenv.config();
+// dotenv is loaded by ./config on import
 
 const BOT_TOKEN = process.env.BOT_TOKEN || appConfig.BOT_TOKEN;
 
 if (!BOT_TOKEN) {
-  console.error('BOT_TOKEN is missing');
+  logger.error({}, 'BOT_TOKEN is missing');
   process.exit(1);
 }
 
 const bot = new Telegraf(BOT_TOKEN);
+patchBotWithRateLimiter(bot);
 const MENU_CB_PREFIX = 'v2_';
 
 type SupportedLanguageOption = {
@@ -45,6 +49,7 @@ function getMainMenuKeyboard(t: ReturnType<typeof getTexts>) {
   return Markup.inlineKeyboard([
     [Markup.button.callback(t.mainMenu.btnLanguage, `${MENU_CB_PREFIX}open_language_menu`)],
     [Markup.button.callback(t.mainMenu.btnUndercover, `${MENU_CB_PREFIX}intro_undercover`)],
+    [Markup.button.callback(t.mainMenu.btnTruthOrDare ?? '🎯 真心话大冒险', 'start_tod')],
     [Markup.button.callback(t.mainMenu.btnCancel, `${MENU_CB_PREFIX}cancel_main_menu`)],
   ]);
 }
@@ -74,7 +79,7 @@ async function showMainMenu(ctx: Context, opts?: { edit?: boolean }) {
 
 function runAfterCb(fn: () => Promise<void>): void {
   setImmediate(() => {
-    fn().catch((err) => console.error('runAfterCb', err));
+    fn().catch((err) => logger.error({ err: errMsg(err) }, 'runAfterCb'));
   });
 }
 
@@ -100,7 +105,7 @@ async function showUndercoverIntro(ctx: Context) {
 }
 
 bot.catch(async (err, ctx) => {
-  console.error('Bot error', err);
+  logger.error({ err: errMsg(err) }, 'Bot error');
   try {
     const chatId = ctx.chat?.id;
     const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru';
@@ -110,7 +115,7 @@ bot.catch(async (err, ctx) => {
   }
 });
 
-bot.command('playgg', async (ctx, next) => {
+bot.command('play', async (ctx, next) => {
   const chat = ctx.chat;
   if (!chat) return next();
 
@@ -183,11 +188,11 @@ bot.on('text', async (ctx, next) => {
       message.entities.some((e) => {
         if (e.type !== 'mention') return false;
         const mentionText = text.slice(e.offset, e.offset + e.length);
-        return mentionText.toLowerCase().includes('blink_aigames_bot');
+        const botUsername = ctx.botInfo?.username;
+        return botUsername ? mentionText.toLowerCase().includes(botUsername.toLowerCase()) : false;
       });
 
     if (chatType === 'group' || chatType === 'supergroup') {
-      if (isVotingEmoji(text)) return next();
       if (isReplyToBot || isMentionBot) {
         await showMainMenu(ctx);
         return;
@@ -196,7 +201,7 @@ bot.on('text', async (ctx, next) => {
 
     return next();
   } catch (err) {
-    console.error('Text handler error', err);
+    logger.error({ err: errMsg(err) }, 'Text handler error');
     return next();
   }
 });
@@ -222,15 +227,16 @@ bot.on('message', async (ctx, next) => {
       link_preview_options: { is_disabled: true },
     });
     ctx.telegram.pinChatMessage(chat.id, sentMsg.message_id).catch((e) =>
-      console.log('Pin failed:', e?.message ?? e),
+      logger.warn({ err: e?.message ?? String(e) }, 'Pin failed'),
     );
   } catch (err) {
-    console.error('Welcome message error', err);
+    logger.error({ err: errMsg(err) }, 'Welcome message error');
   }
   return next();
 });
 
 registerUndercover(bot);
+registerTruthOrDare(bot);
 
 bot.action(`${MENU_CB_PREFIX}intro_undercover`, async (ctx) => {
   await ctx.answerCbQuery();
@@ -263,7 +269,7 @@ bot.action(`${MENU_CB_PREFIX}open_language_menu`, async (ctx) => {
       }
     });
   } catch (err) {
-    console.error('Open language menu error', err);
+    logger.error({ err: errMsg(err) }, 'Open language menu error');
   }
 });
 
@@ -298,7 +304,7 @@ bot.action(/^set_lang_(ru|en|zh)$/, async (ctx) => {
       }
     });
   } catch (err) {
-    console.error('Set language error', err);
+    logger.error({ err: errMsg(err) }, 'Set language error');
   }
 });
 
@@ -319,7 +325,7 @@ bot.action(`${MENU_CB_PREFIX}cancel_main_menu`, async (ctx) => {
       }
     });
   } catch (err) {
-    console.error('Cancel main menu error', err);
+    logger.error({ err: errMsg(err) }, 'Cancel main menu error');
   }
 });
 
@@ -334,12 +340,22 @@ const WEBHOOK_PATH = '/webhook';
 async function start() {
   if (appConfig.useRedis) {
     const redis = await connectRedis();
-    if (redis) console.log('Redis connected');
+    if (redis) {
+      logger.info({}, 'Redis connected');
+      await seedAllLanguages();
+    }
   }
 
   if (appConfig.useWebhook) {
     const url = `${appConfig.WEBHOOK_URL.replace(/\/$/, '')}${WEBHOOK_PATH}`;
-    await bot.telegram.setWebhook(url);
+    const secretToken = appConfig.WEBHOOK_SECRET || undefined;
+    await bot.telegram.setWebhook(url, { secret_token: secretToken });
+
+    const webhookCb = bot.webhookCallback(WEBHOOK_PATH, { secretToken }) as (
+      req: http.IncomingMessage,
+      res: http.ServerResponse,
+    ) => void;
+
     const server = http.createServer((req, res) => {
       if (req.url === '/health' && req.method === 'GET') {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -347,38 +363,42 @@ async function start() {
         return;
       }
       if (req.url === WEBHOOK_PATH && req.method === 'POST') {
-        (bot.webhookCallback(WEBHOOK_PATH) as (
-          req: http.IncomingMessage,
-          res: http.ServerResponse,
-        ) => void)(req, res);
+        webhookCb(req, res);
         return;
       }
       res.writeHead(404);
       res.end();
     });
     server.listen(appConfig.PORT, () => {
-      console.log(`Webhook started port=${appConfig.PORT} url=${url}`);
+      logger.info({ port: appConfig.PORT, url }, 'Webhook started');
     });
     return;
   }
 
   await bot.launch();
-  console.log('Polling started');
+  logger.info({}, 'Polling started');
 }
 
 start().catch((err) => {
-  console.error('Start failed', err);
+  logger.error({ err: errMsg(err) }, 'Start failed');
   process.exit(1);
 });
 
-process.once('SIGINT', () => {
-  bot.stop('SIGINT');
-  void closeRedis();
-  void clearAllStates();
-});
+async function gracefulShutdown(signal: string) {
+  logger.info({ signal }, 'Shutdown received, stopping bot...');
+  bot.stop(signal);
 
-process.once('SIGTERM', () => {
-  bot.stop('SIGTERM');
-  void closeRedis();
-  void clearAllStates();
-});
+  // Flush pending messages in rate limiter queue (up to 3s)
+  await flushQueue(3000);
+
+  // Give in-flight handlers up to 5 seconds to finish
+  await new Promise((resolve) => setTimeout(resolve, 5_000));
+
+  await clearAllStates();
+  await closeRedis();
+  logger.info({}, 'Shutdown cleanup done, exiting.');
+  process.exit(0);
+}
+
+process.once('SIGINT', () => void gracefulShutdown('SIGINT'));
+process.once('SIGTERM', () => void gracefulShutdown('SIGTERM'));

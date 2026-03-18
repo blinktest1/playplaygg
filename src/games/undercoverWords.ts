@@ -9,16 +9,18 @@
  * - No offensive or insensitive content
  */
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
+import type { Difficulty } from './undercover/words';
 
-export interface WordPairEntry {
-  pair: [string, string];
+type WordPair = [string, string];
+
+interface WordPairEntry {
+  pair: WordPair;
   difficulty: Difficulty;
-  tags?: string[];  // for future theme packs
+  tags: string[];
 }
 
 // Flat pairs for backward compat (pickWordPair uses this)
-export const WORD_PAIRS_BY_LANG: Record<string, [string, string][]> = {
+export const WORD_PAIRS_BY_LANG: Record<string, WordPair[]> = {
   zh: [
     // ===== EASY: 差异明显，新手友好 =====
     ['可口可乐', '百事可乐'],

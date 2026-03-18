@@ -6,7 +6,7 @@
 import { getRedis } from './state/redisClient';
 import { config } from './config';
 
-export type RoomGameType = 'undercover';
+export type RoomGameType = 'undercover' | (string & {});
 
 const MAX_ROOMS_PER_CHAT = 20;
 const KEY_PREFIX = 'quota:chat:';

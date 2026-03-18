@@ -1,6 +1,6 @@
 /** Core state and language types. Current production scope is ru/en/zh only. */
 
-export type ChatGameType = 'undercover' | null;
+export type ChatGameType = 'undercover' | 'truthordare' | null;
 
 export type ChatPhase =
   | 'idle'

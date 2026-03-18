@@ -1,4 +1,6 @@
-export const enTexts: any = {
+import type { I18nTexts } from './types';
+
+export const enTexts: I18nTexts = {
   i18n: {
     chooseLanguage: 'Choose your language',
     back: '🔙 Back',
@@ -7,10 +9,11 @@ export const enTexts: any = {
     welcome: "Welcome to @Blink_AIgames_bot — let's play!",
     btnUndercover: 'Undercover',
     btnCancel: 'Cancel',
-    cancelAnswer: "Okay, I'll stay in the background. Need a game? Just send /playgg!",
-    usePlayggForLatestMenu: 'This menu is outdated. Send /playgg to open the latest menu.',
-    privatePlayggHint: '🎮 Please add me to your group and send /playgg there to start playing!',
-    groupUsePlaygg: '👉 In the group, use /playgg to open the game menu.',
+    cancelAnswer: "Okay, I'll stay in the background. Need a game? Just send /play!",
+    usePlayggForLatestMenu: 'This menu is outdated. Send /play to open the latest menu.',
+    privatePlayggHint: '🎮 Please add me to your group and send /play there to start playing!',
+    groupUsePlaygg: '👉 In the group, use /play to open the game menu.',
+    btnTruthOrDare: '🎯 Truth or Dare',
     btnLanguage: '🌐 Language',
   },
   errors: {
@@ -26,7 +29,7 @@ export const enTexts: any = {
   },
   groupWelcome: {
     title: '🎮 Welcome to @Blink_AIgames_bot',
-    intro: 'Play Undercover and more group games. Send /playgg to open the game menu.',
+    intro: 'Play Undercover and more group games. Send /play to open the game menu.',
     separator: '—————————————',
     partners: 'Our partners: Blink — more chat and games!',
   },
@@ -41,8 +44,8 @@ export const enTexts: any = {
       '👥 Players: 5–12\n' +
       '🕹 Game flow:\n' +
       '  1. Get your word: Tap the link to DM the Bot and receive your secret word. The spies get a slightly different word. 🤫\n' +
-      '  2. Speak in turn: Describe your word in 25 seconds — don\'t say it directly!\n' +
-      '  3. Free debate: 45 seconds to catch the liar!\n' +
+      '  2. Speak in turn: Describe your word in 40 seconds — don\'t say it directly!\n' +
+      '  3. Free debate: 120 seconds to catch the liar!\n' +
       '  4. Vote: Tap your emoji to vote for the suspect — 20 seconds.\n' +
       '❌ If nobody votes, the game ends!\n' +
       '🎭 Roles: 5–6p → 1 spy | 7–9p → 2 spies | 10–12p → 3 spies\n' +
@@ -95,7 +98,53 @@ export const enTexts: any = {
     alreadyEnded: 'Already ended.',
     notYourTurn: 'Not your turn!',
     gameForceEnded: 'Game force-ended.',
+    invalidVoteTarget: 'Invalid vote target.',
+    cannotVoteSelf: 'You cannot vote for yourself!',
+    returnToGroup: 'Return to group',
+    btnPlayAgain: '🔄 Play again',
+    civiliansLabel: 'Civilians',
+    undercoverLabel: 'Spies',
+    civiliansWinSubtitle: 'All spies exposed!',
+    undercoverWinSubtitle: 'Civilians outnumbered...',
+    reportGameOver: '🚩 Game Over!',
+    reportSpyLabel: '🕵️‍♂️ Spies',
+    reportCivLabel: '👨‍🌾 Civilians',
+    reportBlankWord: '🚫 Blank',
+    reportNone: '(none)',
+    reportWinLine: (winnerLabel: string) => `🏆 [ ${winnerLabel} ] Victory!`,
+  },
+  truthOrDare: {
+    chooseTier: '🎯 <b>Truth or Dare</b>\n\nPick a mode:',
+    tierIcebreaker: '❄️ Chill',
+    tierAdvanced: '🔮 No Filter',
+    tierSpicy: '🌙 After Dark (18+)',
+    recruitText: (min: number, max: number, tierLabel: string) =>
+      `🎯 <b>Truth or Dare</b>  ${tierLabel}\n\nTap to join! ${min}–${max} players to start.`,
+    recruitTextWithPlayers: (min: number, max: number, count: number, names: string, tierLabel: string) =>
+      `🎯 <b>Truth or Dare</b>  ${tierLabel}\n\n${count} joined: ${names}\n\n${min}–${max} players, tap to join!`,
+    btnJoin: '✋ Join',
+    btnStart: '▶ Start',
+    btnTruth: '💬 Truth',
+    btnDare: '🔥 Dare',
+    btnSkip: '⏭ Skip',
+    btnNext: '👉 Next',
+    btnEndGame: '🛑 End game',
+    yourTurn: (name: string) => `It's <b>${name}</b>'s turn — choose:`,
+    truthLabel: '💬 Truth',
+    dareLabel: '🔥 Dare',
+    questionFor: (name: string, label: string, question: string) =>
+      `${label} → <b>${name}</b>\n\n${question}`,
+    joined: 'Joined!',
+    alreadyJoined: 'You already joined',
+    alreadyRunning: 'A game is already running. End it first.',
+    alreadyStarted: 'Game already started',
+    sessionEnded: 'Game ended',
+    notYourTurn: "It's not your turn",
+    notInGame: "You're not in this game",
+    notEnough: (current: number, required: number) => `Not enough players (${current}/${required})`,
+    full: 'Game is full',
+    gameStarted: (count: number, tierLabel: string) => `🎯 Truth or Dare started! ${count} players. Mode: ${tierLabel}`,
+    gameEnded: '🎯 Truth or Dare ended. Play again next time!',
+    timeoutSkipped: (name: string) => `⏱ ${name} timed out, skipping`,
   },
 };
-
-export type EnTexts = typeof enTexts;

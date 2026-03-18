@@ -17,6 +17,7 @@ import { InMemoryRoomManager } from '../core/InMemoryRoomManager';
 
 // ====== Redis keys ======
 const HASH_PREFIX = 'uc:rooms:';
+const ACTIVE_CHATS_KEY = 'uc:active_chats';
 const TTL_SECONDS = 3600; // 1 hour — games don't last longer
 
 function hashKey(chatId: number): string {
@@ -95,36 +96,167 @@ export async function getActiveRooms(chatId: number): Promise<UndercoverRoom[]> 
   return rooms;
 }
 
+/**
+ * Lua script: atomic create room.
+ * Reads all fields in the hash, counts active rooms, finds next available ID,
+ * and writes the new room — all in one atomic operation.
+ *
+ * KEYS[1] = hash key (uc:rooms:{chatId})
+ * KEYS[2] = active chats set key (uc:active_chats)
+ * ARGV[1] = max rooms per chat
+ * ARGV[2] = chatId (string)
+ * ARGV[3] = TTL seconds
+ * ARGV[4] = initial room JSON template (without roomId — we fill it in Lua)
+ *
+ * Returns: roomId (number) on success, 0 if full.
+ */
+const LUA_CREATE_ROOM = `
+  local hashKey = KEYS[1]
+  local activeChatKey = KEYS[2]
+  local maxRooms = tonumber(ARGV[1])
+  local chatId = ARGV[2]
+  local ttl = tonumber(ARGV[3])
+  local templateJson = ARGV[4]
+
+  local all = redis.call('HGETALL', hashKey)
+  local usedIds = {}
+  local activeCount = 0
+
+  -- all is [field1, value1, field2, value2, ...]
+  for i = 1, #all, 2 do
+    local raw = all[i + 1]
+    -- Quick check: look for "active":true in JSON
+    if raw and string.find(raw, '"active":true', 1, true) then
+      activeCount = activeCount + 1
+      local fieldId = tonumber(all[i])
+      if fieldId then
+        usedIds[fieldId] = true
+      end
+    end
+  end
+
+  if activeCount >= maxRooms then
+    return 0
+  end
+
+  local nextId = 0
+  for id = 1, maxRooms do
+    if not usedIds[id] then
+      nextId = id
+      break
+    end
+  end
+
+  if nextId == 0 then
+    return 0
+  end
+
+  -- Inject roomId into the template JSON
+  -- Template has "roomId":0 placeholder
+  local roomJson = string.gsub(templateJson, '"roomId":0', '"roomId":' .. nextId, 1)
+
+  redis.call('HSET', hashKey, tostring(nextId), roomJson)
+  redis.call('EXPIRE', hashKey, ttl)
+  redis.call('SADD', activeChatKey, chatId)
+
+  return nextId
+`;
+
 export async function createRoom(chatId: number): Promise<UndercoverRoom | null> {
   if (!config.useRedis) return memoryManager.createRoom(chatId);
   const redis = getRedis();
   if (!redis) return memoryManager.createRoom(chatId);
 
-  const all = await redis.hgetall(hashKey(chatId));
-  const activeRooms: UndercoverRoom[] = [];
-  for (const raw of Object.values(all)) {
-    const room = deserialize(raw);
-    if (room && room.active) activeRooms.push(room);
-  }
-
-  if (activeRooms.length >= MAX_ROOMS_PER_CHAT) return null;
-
-  const usedIds = new Set(activeRooms.map((r) => r.roomId));
-  let nextId = 1;
-  while (usedIds.has(nextId) && nextId <= MAX_ROOMS_PER_CHAT) nextId++;
-  if (nextId > MAX_ROOMS_PER_CHAT) return null;
-
-  const room: UndercoverRoom = {
+  // Build template with roomId=0 as placeholder (Lua will replace)
+  const template: UndercoverRoom = {
     chatId,
-    roomId: nextId,
+    roomId: 0,
     state: createInitialState(),
     active: true,
     createdAt: Date.now(),
   };
 
-  await redis.hset(hashKey(chatId), fieldKey(nextId), serialize(room));
-  await redis.expire(hashKey(chatId), TTL_SECONDS);
-  return room;
+  const result = await redis.eval(
+    LUA_CREATE_ROOM,
+    2,
+    hashKey(chatId),
+    ACTIVE_CHATS_KEY,
+    String(MAX_ROOMS_PER_CHAT),
+    String(chatId),
+    String(TTL_SECONDS),
+    serialize(template),
+  );
+
+  const roomId = Number(result);
+  if (!roomId || roomId <= 0) return null;
+
+  // Return the room object with correct roomId
+  template.roomId = roomId;
+  return template;
+}
+
+/**
+ * Lua script: atomic vote write.
+ * Reads the room JSON, injects the vote into state.votes, writes back.
+ * Returns 1 on success, 0 if room not found or not in voting phase.
+ *
+ * KEYS[1] = hash key (uc:rooms:{chatId})
+ * ARGV[1] = room field key (roomId as string)
+ * ARGV[2] = voter userId (string)
+ * ARGV[3] = target userId (string)
+ */
+const LUA_CAST_VOTE = `
+  local raw = redis.call('HGET', KEYS[1], ARGV[1])
+  if not raw then return 0 end
+
+  local room = cjson.decode(raw)
+  if not room or not room.state then return 0 end
+  if room.state.phase ~= 'voting' then return 0 end
+
+  if not room.state.votes then
+    room.state.votes = {}
+  end
+  room.state.votes[ARGV[2]] = tonumber(ARGV[3])
+
+  redis.call('HSET', KEYS[1], ARGV[1], cjson.encode(room))
+  return 1
+`;
+
+/**
+ * Atomic vote: write a single vote without read-modify-write race.
+ * Falls back to in-memory mutation when Redis is disabled.
+ * Returns true if the vote was recorded.
+ */
+export async function castVote(
+  chatId: number,
+  roomId: number,
+  voterId: number,
+  targetId: number,
+): Promise<boolean> {
+  if (!config.useRedis) {
+    // In-memory: direct mutation is safe (single-threaded)
+    const room = memoryManager.getRoom(chatId, roomId);
+    if (!room?.active || room.state.phase !== 'voting') return false;
+    room.state.votes[voterId] = targetId;
+    return true;
+  }
+  const redis = getRedis();
+  if (!redis) {
+    const room = memoryManager.getRoom(chatId, roomId);
+    if (!room?.active || room.state.phase !== 'voting') return false;
+    room.state.votes[voterId] = targetId;
+    return true;
+  }
+
+  const result = await redis.eval(
+    LUA_CAST_VOTE,
+    1,
+    hashKey(chatId),
+    fieldKey(roomId),
+    String(voterId),
+    String(targetId),
+  );
+  return result === 1;
 }
 
 /**
@@ -151,11 +283,16 @@ export async function endRoom(room: UndercoverRoom): Promise<void> {
     return;
   }
   await redis.hdel(hashKey(room.chatId), fieldKey(room.roomId));
+  // Remove chat from active set if no rooms remain
+  const remaining = await redis.hlen(hashKey(room.chatId));
+  if (remaining === 0) {
+    await redis.srem(ACTIVE_CHATS_KEY, String(room.chatId));
+  }
 }
 
 /**
- * Iterate all rooms across all chats. Used by polling recovery.
- * In Redis mode, we scan for uc:rooms:* keys.
+ * Iterate all rooms across all active chats. Used by polling recovery.
+ * P0-3 fix: uses uc:active_chats SET instead of SCAN, O(active) not O(total).
  */
 export async function getAllRoomsByChat(): Promise<Map<number, UndercoverRoom[]>> {
   const result = new Map<number, UndercoverRoom[]>();
@@ -175,23 +312,23 @@ export async function getAllRoomsByChat(): Promise<Map<number, UndercoverRoom[]>
     return result;
   }
 
-  let cursor = '0';
-  do {
-    const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', `${HASH_PREFIX}*`, 'COUNT', 100);
-    cursor = nextCursor;
-    for (const key of keys) {
-      const chatIdStr = key.substring(HASH_PREFIX.length);
-      const chatId = Number(chatIdStr);
-      if (!Number.isFinite(chatId)) continue;
-      const all = await redis.hgetall(key);
-      const rooms: UndercoverRoom[] = [];
-      for (const raw of Object.values(all)) {
-        const room = deserialize(raw);
-        if (room) rooms.push(room);
-      }
-      if (rooms.length > 0) result.set(chatId, rooms);
+  const chatIds = await redis.smembers(ACTIVE_CHATS_KEY);
+  for (const chatIdStr of chatIds) {
+    const chatId = Number(chatIdStr);
+    if (!Number.isFinite(chatId)) continue;
+    const all = await redis.hgetall(hashKey(chatId));
+    const rooms: UndercoverRoom[] = [];
+    for (const raw of Object.values(all)) {
+      const room = deserialize(raw);
+      if (room) rooms.push(room);
     }
-  } while (cursor !== '0');
+    if (rooms.length > 0) {
+      result.set(chatId, rooms);
+    } else {
+      // Stale entry in active set — clean up
+      await redis.srem(ACTIVE_CHATS_KEY, chatIdStr);
+    }
+  }
 
   return result;
 }
