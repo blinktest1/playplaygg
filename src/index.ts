@@ -363,6 +363,17 @@ async function start() {
         res.end('ok');
         return;
       }
+      if (req.url === '/health/version' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          version: process.env.npm_package_version || 'unknown',
+          commit: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_COMMIT || 'unknown',
+          commands: ['play', 'playgg'],
+          truth_or_dare: true,
+          mode: appConfig.useWebhook ? 'webhook' : 'polling',
+        }));
+        return;
+      }
       if (req.url === WEBHOOK_PATH && req.method === 'POST') {
         webhookCb(req, res);
         return;
