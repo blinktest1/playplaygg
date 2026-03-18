@@ -1,6 +1,6 @@
 {
   "name": "blink-games-bot",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Blink Games Bot — Telegram 群组多游戏机器人（多语言，基于 telegraf + Redis + TypeScript）",
   "main": "dist/index.js",
   "scripts": {
