@@ -14,6 +14,7 @@ export const enTexts: I18nTexts = {
     privatePlayggHint: '🎮 Please add me to your group and send /play there to start playing!',
     groupUsePlaygg: '👉 In the group, use /play to open the game menu.',
     btnTruthOrDare: '🎯 Truth or Dare',
+    btnAddToGroup: '➕ Add to Group',
     btnLanguage: '🌐 Language',
   },
   errors: {

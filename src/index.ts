@@ -129,7 +129,13 @@ bot.command(['play', 'playgg'], async (ctx, next) => {
     const userId = ctx.from?.id;
     const userLang = userId != null ? await getUserLanguage(userId) : undefined;
     const lang: LanguageCode = userLang ?? resolveLangFromTelegram(ctx.from?.language_code);
-    await ctx.reply(getTexts(lang).mainMenu.privatePlayggHint);
+    const t = getTexts(lang);
+    const botUsername = ctx.botInfo?.username ?? 'Blink_AIgames_bot';
+    const addToGroupUrl = `https://t.me/${botUsername}?startgroup=true`;
+    const kb = Markup.inlineKeyboard([
+      [Markup.button.url(t.mainMenu.btnAddToGroup, addToGroupUrl)],
+    ]);
+    await ctx.reply(t.mainMenu.privatePlayggHint, { parse_mode: 'HTML', reply_markup: kb.reply_markup });
     return;
   }
 
@@ -161,8 +167,12 @@ bot.command('start', async (ctx, next) => {
     const userId = ctx.from?.id;
     const userLang = userId != null ? await getUserLanguage(userId) : undefined;
     const lang: LanguageCode = userLang ?? resolveLangFromTelegram(ctx.from?.language_code);
+    const t = getTexts(lang);
+    const botUsername = ctx.botInfo?.username ?? 'Blink_AIgames_bot';
+    const addToGroupUrl = `https://t.me/${botUsername}?startgroup=true`;
     const kb = Markup.inlineKeyboard([
-      [Markup.button.callback(getTexts(lang).mainMenu.btnLanguage, `${MENU_CB_PREFIX}open_language_menu`)],
+      [Markup.button.url(t.mainMenu.btnAddToGroup, addToGroupUrl)],
+      [Markup.button.callback(t.mainMenu.btnLanguage, `${MENU_CB_PREFIX}open_language_menu`)],
     ]);
     await ctx.reply(getPrivateStartMsg(lang), { parse_mode: 'HTML', reply_markup: kb.reply_markup });
     return;

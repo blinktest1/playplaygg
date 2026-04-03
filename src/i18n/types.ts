@@ -17,6 +17,8 @@ export interface I18nTexts {
     groupUsePlaygg: string;
     /** 真心话大冒险主菜单按钮 */
     btnTruthOrDare?: string;
+    /** 添加到群组按钮 */
+    btnAddToGroup: string;
   };
   errors: {
     generic: string;

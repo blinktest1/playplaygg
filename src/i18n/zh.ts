@@ -14,6 +14,7 @@ export const zhTexts: I18nTexts = {
     privatePlayggHint: '🎮 请将我拉入群组，在群内发送 /play 开始游戏！',
     groupUsePlaygg: '👉 群里请用 /play 唤出菜单。',
     btnTruthOrDare: '🎯 真心话大冒险',
+    btnAddToGroup: '➕ 拉进群聊',
     btnLanguage: '🌐 语言',
   },
   errors: {

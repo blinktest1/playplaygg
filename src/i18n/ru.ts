@@ -14,6 +14,7 @@ export const ruTexts: I18nTexts = {
     privatePlayggHint: '🎮 Добавьте меня в группу и отправьте /play!',
     groupUsePlaygg: '👉 В группе: /play для меню игр.',
     btnTruthOrDare: '🎯 Правда или Действие',
+    btnAddToGroup: '➕ Добавить в группу',
     btnLanguage: '🌐 Язык',
   },
   errors: {
