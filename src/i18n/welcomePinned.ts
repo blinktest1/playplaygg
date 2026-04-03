@@ -1,35 +1,17 @@
 import type { LanguageCode } from '../state';
 
 export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
-  ru: `🎮 <b>Добро пожаловать в @Blink_AIgames_bot!</b>
+  en: `🎮 <b>Spy Me</b> is here! Send <b>/play</b> to start a game.
 
-Хотите мгновенно зажечь в своем сообществе? 🔥 Просто пригласите меня в группу и наберите <b>/play</b>, чтобы сразу же начать веселую вечеринку! 🎲✨
+🕵️ Undercover · 🎯 Truth or Dare · 📝 Anonymous Wall`,
 
+  ru: `🎮 <b>Spy Me</b> в чате! Отправь <b>/play</b>, чтобы начать.
 
-─────── ✦ ───────
+🕵️ Кто шпион · 🎯 Правда или Действие · 📝 Анонимная стена`,
 
+  zh: `🎮 <b>Spy Me</b> 已加入！发送 <b>/play</b> 开始游戏。
 
-🚀 <b>Душевные знакомства:</b> @Blink_AImatch_Bot`,
-
-  zh: `🎮 <b>欢迎来到 @Blink_AIgames_bot 游戏乐园！</b>
-
-想让你的社区瞬间燥起来吗？🔥 只需把我邀请进群，发送 <b>/play</b> 即可立刻开启派对狂欢！🎲✨
-
-
-─────── ✦ ───────
-
-
-🚀 <b>灵魂交友:</b> @Blink_AImatch_Bot`,
-
-  en: `🎮 <b>Welcome to @Blink_AIgames_bot!</b>
-
-Want to hype up your community instantly? 🔥 Just invite me to the group and type <b>/play</b> to start the party right away! 🎲✨
-
-
-─────── ✦ ───────
-
-
-🚀 <b>Soul Match:</b> @Blink_AImatch_Bot`,
+🕵️ 谁是卧底 · 🎯 真心话大冒险 · 📝 匿名大字报`,
 };
 
 const FALLBACK_LANG: LanguageCode = 'ru';

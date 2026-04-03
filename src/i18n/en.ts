@@ -6,7 +6,7 @@ export const enTexts: I18nTexts = {
     back: '🔙 Back',
   },
   mainMenu: {
-    welcome: "Welcome to @Blink_AIgames_bot — let's play!",
+    welcome: "🎮 Spy Me — pick a game!",
     btnUndercover: 'Undercover',
     btnCancel: 'Cancel',
     cancelAnswer: "Okay, I'll stay in the background. Need a game? Just send /play!",
@@ -28,7 +28,7 @@ export const enTexts: I18nTexts = {
     roomLabel: (roomId: number) => `🎪 Room ${roomId}`,
   },
   groupWelcome: {
-    title: '🎮 Welcome to @Blink_AIgames_bot',
+    title: '🎮 Welcome to Spy Me!',
     intro: 'Play Undercover and more group games. Send /play to open the game menu.',
     separator: '—————————————',
     partners: 'Our partners: Blink — more chat and games!',

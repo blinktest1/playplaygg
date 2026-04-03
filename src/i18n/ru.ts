@@ -6,7 +6,7 @@ export const ruTexts: I18nTexts = {
     back: '🔙 Назад',
   },
   mainMenu: {
-    welcome: 'Добро пожаловать в @Blink_AIgames_bot — давайте играть!',
+    welcome: '🎮 Spy Me — выбирай игру!',
     btnUndercover: 'Кто шпион',
     btnCancel: 'Отмена',
     cancelAnswer: 'Ок, я в фоне. Нужна игра — /play!',
@@ -28,7 +28,7 @@ export const ruTexts: I18nTexts = {
     roomLabel: (roomId: number) => `🎪 Комната ${roomId}`,
   },
   groupWelcome: {
-    title: '🎮 Добро пожаловать в @Blink_AIgames_bot!',
+    title: '🎮 Добро пожаловать в Spy Me!',
     intro: 'Играйте в «Кто шпион» и другие игры. Отправьте /play!',
     separator: '─────── ✦ ───────',
     partners: 'Партнёры: Blink — больше общения и игр!',

@@ -1,26 +1,29 @@
 import type { LanguageCode } from '../state';
 
 export const PRIVATE_START_MSG: Record<LanguageCode, string> = {
-  ru: `👋 <b>Добро пожаловать в PlayPlayGG!</b> Я ваш личный администратор групповых игр.
+  en: `🎮 <b>Spy Me</b> — Party games for your group!
 
-Добавьте меня в свою группу и наберите <b>/play</b>, чтобы начать вечеринку! 🎉
+🕵️ Undercover
+🎯 Truth or Dare
+📝 Anonymous Wall
 
+Add me to a group and send <b>/play</b> to start!`,
 
-🚀 <b>Душевные знакомства:</b> @Blink_AImatch_Bot`,
+  ru: `🎮 <b>Spy Me</b> — Групповые игры для вашего чата!
 
-  zh: `👋 <b>欢迎来到 PlayPlayGG！</b> 我是您的专属群组游戏管理员。
+🕵️ Кто шпион
+🎯 Правда или Действие
+📝 Анонимная стена
 
-将我邀请进群并发送 <b>/play</b> 即可开启派对狂欢！ 🎉
+Добавь меня в группу и отправь <b>/play</b>!`,
 
+  zh: `🎮 <b>Spy Me</b> — 群组派对游戏！
 
-🚀 <b>灵魂交友:</b> @Blink_AImatch_Bot`,
+🕵️ 谁是卧底
+🎯 真心话大冒险
+📝 匿名大字报
 
-  en: `👋 <b>Welcome to PlayPlayGG!</b> I am your personal group games administrator.
-
-Add me to your group and type <b>/play</b> to start the party! 🎉
-
-
-🚀 <b>Soul Match:</b> @Blink_AImatch_Bot`,
+拉我进群，发 <b>/play</b> 即可开玩！`,
 };
 
 const FALLBACK: LanguageCode = 'ru';

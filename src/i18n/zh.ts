@@ -6,7 +6,7 @@ export const zhTexts: I18nTexts = {
     back: '🔙 返回',
   },
   mainMenu: {
-    welcome: '欢迎使用 @Blink_AIgames_bot，一起来玩！',
+    welcome: '🎮 Spy Me — 选个游戏开玩！',
     btnUndercover: '谁是卧底',
     btnCancel: '取消',
     cancelAnswer: '好的，后台待命。发送 /play 开始游戏！',
@@ -28,7 +28,7 @@ export const zhTexts: I18nTexts = {
     roomLabel: (roomId: number) => `🎪 ${roomId}号房`,
   },
   groupWelcome: {
-    title: '🎮 欢迎加入 @Blink_AIgames_bot',
+    title: '🎮 欢迎加入 Spy Me!',
     intro: '玩谁是卧底等群游戏。发送 /play 开始！',
     separator: '—————————————',
     partners: '合作伙伴：Blink — 更多社交与游戏！',
