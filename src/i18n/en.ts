@@ -161,19 +161,22 @@ export const enTexts: I18nTexts = {
     timeoutSkipped: (name: string) => `⏱ ${name} timed out, skipping`,
   },
   anonymous: {
-    chooseTopic: '📝 <b>Anonymous Wall</b>\n\nPick a topic:',
+    chooseTopic: '📝 <b>Anonymous Wall</b>\n\nPick a topic below. Then I will send a private link — anonymous messages must be sent to me in DM, not in the group.',
     topicConfess: '💌 Confessions',
     topicRoast: '🔥 Roast',
     topicSecret: '🤫 Secrets',
-    topicCustom: '✏️ Custom',
-    askCustomTopic: 'Type the topic for the anonymous wall:',
+    topicCompliment: '🌸 Compliments',
+    topicRant: '⚡ Rant',
+    topicDream: '🌙 Dream / Crush',
     wallActive: (topic: string, link: string) =>
-      `📝 <b>Anonymous Wall</b> — <i>${topic}</i>\n\n` +
-      `Tap the link below, then DM me your anonymous message:\n` +
-      `👉 <a href="${link}">Send anonymously</a>\n\n` +
-      `Send /quit to close the wall.`,
+      `📝 <b>Anonymous Wall is live</b> — <i>${topic}</i>\n\n` +
+      `1. Tap the private link below\n` +
+      `2. Send me your message in DM\n` +
+      `3. I will post it anonymously to the group\n\n` +
+      `👉 <a href="${link}">Open DM to send anonymously</a>\n\n` +
+      `⚠️ Messages typed directly in the group are <b>not anonymous</b>.\nSend /quit to close the wall.`,
     privateIntro: (topic: string) =>
-      `📝 Topic: <b>${topic}</b>\n\nSend me your message — I'll post it anonymously to the group. No one will know it's you 🤫`,
+      `📝 Topic: <b>${topic}</b>\n\nNow send me the message you want to post anonymously. I will forward it to the group without your name 🤫`,
     forwarded: (topic: string, text: string) =>
       `📝 <b>Anonymous Wall</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
     sent: '✅ Sent anonymously!',

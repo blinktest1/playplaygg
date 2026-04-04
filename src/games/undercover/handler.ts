@@ -175,7 +175,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
             .trim()
         : '');
     const payload = rawPayload || '';
-    if (!payload.startsWith('undercover_')) return;
+    if (!payload.startsWith('undercover_')) return;  // other bot.start handlers will be tried by Telegraf
 
     try {
       const parts = payload.split('_');

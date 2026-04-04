@@ -47,7 +47,11 @@ export function registerAnonymous(bot: Telegraf<Context>) {
             ],
             [
               Markup.button.callback(t.anonymous.topicSecret, `anon_topic_${chatId}_secret`),
-              Markup.button.callback(t.anonymous.topicCustom, `anon_topic_${chatId}_custom`),
+              Markup.button.callback(t.anonymous.topicCompliment, `anon_topic_${chatId}_compliment`),
+            ],
+            [
+              Markup.button.callback(t.anonymous.topicRant, `anon_topic_${chatId}_rant`),
+              Markup.button.callback(t.anonymous.topicDream, `anon_topic_${chatId}_dream`),
             ],
           ]).reply_markup,
         },
@@ -79,68 +83,29 @@ export function registerAnonymous(bot: Telegraf<Context>) {
     }
   });
 
-  // 自定义话题：先提示输入
-  bot.action(/^anon_topic_(-?\d+)_custom$/, async (ctx) => {
+  // 更多预设话题
+  bot.action(/^anon_topic_(-?\d+)_(compliment|rant|dream)$/, async (ctx) => {
     try {
       await ctx.answerCbQuery();
       const chatId = Number(ctx.match[1]);
+      const key = ctx.match[2];
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
 
-      await setChatState(chatId, {
-        currentGame: 'anonymous',
-        phase: 'waiting_players',
-        data: { awaitingCustomTopic: true },
-      });
+      const topicMap: Record<string, string> = {
+        compliment: t.anonymous.topicCompliment,
+        rant: t.anonymous.topicRant,
+        dream: t.anonymous.topicDream,
+      };
 
       try { await ctx.editMessageReplyMarkup(undefined); } catch {}
-      await ctx.telegram.sendMessage(chatId, t.anonymous.askCustomTopic);
+      await launchAnonymousWall(bot, chatId, topicMap[key] || key);
     } catch (err) {
-      logger.error({ err: errMsg(err) }, 'anon_topic_custom error');
+      logger.error({ err: errMsg(err) }, 'anon_topic error');
     }
   });
 
-  // 自定义话题文本输入
-  bot.on('text', async (ctx, next) => {
-    if (!ctx.chat || (ctx.chat.type !== 'group' && ctx.chat.type !== 'supergroup')) return next();
-    const chatId = ctx.chat.id;
-    const state = await getOrCreateChatState(chatId);
-    if (state.currentGame !== 'anonymous' || !state.data?.['awaitingCustomTopic']) return next();
-
-    const text = 'text' in ctx.message ? ctx.message.text?.trim() : '';
-    if (!text) return next();
-
-    await launchAnonymousWall(bot, chatId, text);
-  });
-
-  // 私聊 /start anon_<chatId> — 用户准备发匿名内容
-  bot.start(async (ctx) => {
-    const payload = ctx.startPayload;
-    if (!payload || !payload.startsWith('anon_')) return;
-
-    try {
-      const chatId = Number(payload.replace('anon_', ''));
-      if (!Number.isFinite(chatId)) return;
-
-      const lang = await getChatLanguage(chatId);
-      const t = getTexts(lang);
-      const state = await getOrCreateChatState(chatId);
-
-      if (state.currentGame !== 'anonymous' || state.phase !== 'in_game') {
-        await ctx.reply(t.anonymous.notActive);
-        return;
-      }
-
-      const topic = (state.data?.['anonTopic'] as string) || '💬';
-      const userId = ctx.from?.id;
-      if (!userId) return;
-
-      anonSessions.set(userId, { chatId, topic });
-      await ctx.reply(t.anonymous.privateIntro(topic), { parse_mode: 'HTML' });
-    } catch (err) {
-      logger.error({ err: errMsg(err) }, 'anon start error');
-    }
-  });
+  // Note: anon_ deep link handling is done via handleAnonStart() called from index.ts
 
   // 私聊文本 → 匿名转发到群
   bot.on('text', async (ctx, next) => {
@@ -193,6 +158,36 @@ export function registerAnonymous(bot: Telegraf<Context>) {
 }
 
 // ─── Launch wall with a topic ────────────────────────────────────────────────
+
+/** Handle /start anon_<chatId> deep link — called from index.ts */
+export async function handleAnonStart(ctx: Context, payload: string): Promise<boolean> {
+  if (!payload.startsWith('anon_')) return false;
+
+  try {
+    const chatId = Number(payload.replace('anon_', ''));
+    if (!Number.isFinite(chatId)) return false;
+
+    const lang = await getChatLanguage(chatId);
+    const t = getTexts(lang);
+    const state = await getOrCreateChatState(chatId);
+
+    if (state.currentGame !== 'anonymous' || state.phase !== 'in_game') {
+      await ctx.reply(t.anonymous.notActive);
+      return true;
+    }
+
+    const topic = (state.data?.['anonTopic'] as string) || '💬';
+    const userId = ctx.from?.id;
+    if (!userId) return true;
+
+    anonSessions.set(userId, { chatId, topic });
+    await ctx.reply(t.anonymous.privateIntro(topic), { parse_mode: 'HTML' });
+    return true;
+  } catch (err) {
+    logger.error({ err: errMsg(err) }, 'anon start error');
+    return true;
+  }
+}
 
 async function launchAnonymousWall(bot: Telegraf<Context>, chatId: number, topic: string) {
   const lang = await getChatLanguage(chatId);

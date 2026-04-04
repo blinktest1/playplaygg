@@ -189,8 +189,9 @@ export interface I18nTexts {
     topicConfess: string;
     topicRoast: string;
     topicSecret: string;
-    topicCustom: string;
-    askCustomTopic: string;
+    topicCompliment: string;
+    topicRant: string;
+    topicDream: string;
     wallActive: (topic: string, link: string) => string;
     privateIntro: (topic: string) => string;
     forwarded: (topic: string, text: string) => string;

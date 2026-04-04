@@ -15,7 +15,7 @@ import {
 } from './state';
 import { registerUndercover } from './games/undercover';
 import { registerTruthOrDare } from './games/truthordare';
-import { registerAnonymous } from './games/anonymous';
+import { registerAnonymous, handleAnonStart } from './games/anonymous';
 import { seedAllLanguages } from './games/undercover/wordStore';
 import { logger, errMsg } from './logger';
 import { patchBotWithRateLimiter } from './rateLimiterPatch';
@@ -195,6 +195,11 @@ bot.command('start', async (ctx, next) => {
     const payload = ((ctx as any).startPayload as string | undefined) || payloadFromText;
 
     if (payload && payload.length > 0) {
+      // Handle anon_ deep links directly (undercover handler doesn't next())
+      if (payload.startsWith('anon_')) {
+        await handleAnonStart(ctx, payload);
+        return;
+      }
       return next();
     }
 

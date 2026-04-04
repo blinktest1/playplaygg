@@ -161,19 +161,22 @@ export const zhTexts: I18nTexts = {
     timeoutSkipped: (name: string) => `⏱ ${name} 超时，自动跳过`,
   },
   anonymous: {
-    chooseTopic: '📝 <b>匿名大字报</b>\n\n选个话题：',
+    chooseTopic: '📝 <b>匿名大字报</b>\n\n先选一个话题。选完后我会发一个私聊入口链接——匿名内容要发给我私聊，不能直接发在群里。',
     topicConfess: '💌 表白墙',
     topicRoast: '🔥 吐槽大会',
     topicSecret: '🤫 说出秘密',
-    topicCustom: '✏️ 自定义',
-    askCustomTopic: '输入匿名大字报的话题：',
+    topicCompliment: '🌸 夸夸墙',
+    topicRant: '⚡ 发疯吐槽',
+    topicDream: '🌙 暗恋 / 心事',
     wallActive: (topic: string, link: string) =>
-      `📝 <b>匿名大字报</b> — <i>${topic}</i>\n\n` +
-      `点击下方链接，私聊我发送你的匿名消息：\n` +
-      `👉 <a href="${link}">匿名发言</a>\n\n` +
-      `发送 /quit 关闭大字报。`,
+      `📝 <b>匿名大字报已开启</b> — <i>${topic}</i>\n\n` +
+      `1. 点下面这个私聊链接\n` +
+      `2. 把匿名内容发给我\n` +
+      `3. 我会匿名转发到群里\n\n` +
+      `👉 <a href="${link}">点我私聊匿名发言</a>\n\n` +
+      `⚠️ 直接发在群里的消息 <b>不是匿名</b>。\n发送 /quit 可关闭大字报。`,
     privateIntro: (topic: string) =>
-      `📝 话题：<b>${topic}</b>\n\n把你想说的发给我，我会匿名转发到群里。没人会知道是你 🤫`,
+      `📝 当前话题：<b>${topic}</b>\n\n现在把你想匿名发到群里的内容发给我，我会隐藏你的名字转发过去 🤫`,
     forwarded: (topic: string, text: string) =>
       `📝 <b>匿名大字报</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
     sent: '✅ 已匿名发送！',
