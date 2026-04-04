@@ -10,6 +10,7 @@ import { getTexts } from '../i18n';
 import { logger, errMsg } from '../logger';
 import { trackGroupMessage } from '../stats';
 import { LruMap } from '../lruMap';
+import { generateAnonCard } from './anonCard';
 
 // ─── In-memory session: userId → target chatId for anonymous forwarding ──────
 
@@ -131,10 +132,13 @@ export function registerAnonymous(bot: Telegraf<Context>) {
         return;
       }
 
-      await bot.telegram.sendMessage(
+      // Generate image card with text as caption
+      const cardBuffer = await generateAnonCard();
+      const caption = t.anonymous.forwarded(session.topic, text);
+      await bot.telegram.sendPhoto(
         session.chatId,
-        t.anonymous.forwarded(session.topic, text),
-        { parse_mode: 'HTML' },
+        { source: cardBuffer, filename: 'anonymous.png' },
+        { caption, parse_mode: 'HTML' },
       );
       trackGroupMessage();
       await ctx.reply(t.anonymous.sent);
