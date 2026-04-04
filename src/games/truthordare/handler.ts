@@ -18,6 +18,7 @@ import {
   type TodPlayer,
   type TodSession,
 } from './types';
+import { trackGameStart, trackGroupMessage } from '../../stats';
 
 // ─── In-memory session store ─────────────────────────────────────────────────
 
@@ -303,6 +304,8 @@ export function registerTruthOrDare(bot: Telegraf<Context>) {
         chatId,
         t.truthOrDare.gameStarted(session.players.length, tierLabel),
       );
+      trackGameStart('tod');
+      trackGroupMessage();
 
       await askCurrentPlayer(bot, chatId);
     } catch (err) {

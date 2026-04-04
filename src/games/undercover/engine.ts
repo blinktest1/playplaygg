@@ -28,6 +28,7 @@ import {
 } from './types';
 import { checkWinCondition } from './winCondition';
 import { buildGameOverReport, buildGroupReturnLink, formatSpeakingOrder, sendRoomMessage } from './messages';
+import { trackGameStart, trackGroupMessage } from '../../stats';
 
 // ─── Timer key helper ────────────────────────────────────────────────────────
 
@@ -205,6 +206,8 @@ export async function startUndercoverGame(bot: Telegraf<Context>, room: Undercov
   }
 
   await sendRoomMessage(bot, chatId, room.roomId, t.undercover.startAnnounce(players.length));
+  trackGameStart('uc');
+  trackGroupMessage();
 
   const basePlayers = players.map((p) => ({ ...p, alive: true }));
   const chatGameCount = incrementChatGameCount(chatId);

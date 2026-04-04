@@ -19,6 +19,7 @@ import { seedAllLanguages } from './games/undercover/wordStore';
 import { logger, errMsg } from './logger';
 import { patchBotWithRateLimiter } from './rateLimiterPatch';
 import { flushQueue } from './rateLimiter';
+import { trackUser, trackGroup, trackGroupMessage, getStats } from './stats';
 
 // dotenv is loaded by ./config on import
 
@@ -75,6 +76,7 @@ async function showMainMenu(ctx: Context, opts?: { edit?: boolean }) {
   }
 
   await ctx.reply(t.mainMenu.welcome, getMainMenuKeyboard(t));
+  if (ctx.chat && ctx.chat.type !== 'private') trackGroupMessage();
 }
 
 function runAfterCb(fn: () => Promise<void>): void {
@@ -145,6 +147,9 @@ bot.command(['play', 'playgg'], async (ctx, next) => {
 bot.command('start', async (ctx, next) => {
   const chat = ctx.chat;
   if (!chat) return next();
+
+  // Track every user who hits /start
+  if (ctx.from?.id) trackUser(ctx.from.id);
 
   if (chat.type === 'group' || chat.type === 'supergroup') {
     const t = getTexts(await getChatLanguage(chat.id));
@@ -232,6 +237,7 @@ bot.on('message', async (ctx, next) => {
 
     const groupLang = resolveLangFromTelegram(msg?.from?.language_code);
     await setChatLanguage(chat.id, groupLang);
+    trackGroup(chat.id);
 
     const sentMsg = await ctx.reply(getWelcomePinnedMsg(groupLang), {
       parse_mode: 'HTML',
@@ -371,6 +377,16 @@ async function start() {
       if (req.url === '/health' && req.method === 'GET') {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('ok');
+        return;
+      }
+      if (req.url === '/stats' && req.method === 'GET') {
+        getStats().then((s) => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(s));
+        }).catch(() => {
+          res.writeHead(500);
+          res.end('error');
+        });
         return;
       }
       if (req.url === '/health/version' && req.method === 'GET') {
