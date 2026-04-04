@@ -26,7 +26,7 @@ Add me to a group and send <b>/play</b> to start!`,
 拉我进群，发 <b>/play</b> 即可开玩！`,
 };
 
-const FALLBACK: LanguageCode = 'ru';
+const FALLBACK: LanguageCode = 'en';
 
 export function getPrivateStartMsg(lang: LanguageCode): string {
   return PRIVATE_START_MSG[lang] ?? PRIVATE_START_MSG[FALLBACK];

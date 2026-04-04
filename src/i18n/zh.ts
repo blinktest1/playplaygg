@@ -16,6 +16,17 @@ export const zhTexts: I18nTexts = {
     btnTruthOrDare: '🎯 真心话大冒险',
     btnAddToGroup: '➕ 拉进群聊',
     btnLanguage: '🌐 语言',
+    helpText:
+      '🎮 <b>Spy Me — 玩法说明</b>\n\n' +
+      '🕵️ <b>谁是卧底</b>\n' +
+      '每人领一个词，卧底的词略有不同。描述你的词，找出说谎者，投票淘汰！\n' +
+      '👥 5–12 人\n\n' +
+      '🎯 <b>真心话大冒险</b>\n' +
+      '选个模式，轮流选真心话或大冒险。怂了可以跳过 🐔\n' +
+      '👥 2–20 人\n\n' +
+      '📝 <b>匿名大字报</b>\n' +
+      '在群里匿名发言，说出你的真实想法 👀\n\n' +
+      '➡️ 在群里发 /play 开始！',
   },
   errors: {
     generic: '⚠️ 出现错误，请稍后再试。',
@@ -61,7 +72,7 @@ export const zhTexts: I18nTexts = {
     gameStartCivilian: (word: string) => `游戏开始！你的词：${word}`,
     blankWord: '(无词)',
     blankCivilianMessage: '游戏开始！本局你没有词（白板）。',
-    speakingOrder: (order: string) => `发言顺序：\n<code>${order}</code>`,
+    speakingOrder: (order: string) => `发言顺序：\n${order}`,
     speakingOrderSuffix: ' > 45秒讨论 > 投票',
     nowSpeaking: (name: string) => `当前发言：📍 @${name}`,
     speakButtonHint: '👇 非本人不要点❗️',

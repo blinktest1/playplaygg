@@ -1,6 +1,10 @@
 /** Generic in-memory room manager for room-based group games. */
 
-import type { BaseRoom } from './RoomRepository';
+export interface BaseRoom {
+  chatId: number;
+  roomId: number;
+  active: boolean;
+}
 
 export class InMemoryRoomManager<TRoom extends BaseRoom> {
   private readonly roomsByChat = new Map<number, TRoom[]>();

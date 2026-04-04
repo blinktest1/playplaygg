@@ -228,7 +228,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
     } catch (err) {
       logger.error({ err: errMsg(err) }, '处理 /start 报名异常');
       const chatId = ctx.chat?.id;
-      const tErr = getTexts(typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru');
+      const tErr = getTexts(typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en');
       await ctx.reply(tErr.errors.generic);
     }
   });

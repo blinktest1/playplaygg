@@ -63,7 +63,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 async function showMainMenu(ctx: Context, opts?: { edit?: boolean }) {
   const chatId = ctx.chat?.id;
-  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru';
+  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en';
   const t = getTexts(lang);
 
   if (opts?.edit && 'callbackQuery' in ctx && ctx.callbackQuery?.message) {
@@ -87,7 +87,7 @@ function runAfterCb(fn: () => Promise<void>): void {
 
 async function showUndercoverIntro(ctx: Context) {
   const chatId = ctx.chat?.id;
-  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru';
+  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en';
   const t = getTexts(lang);
   const keyboard = Markup.inlineKeyboard([
     [Markup.button.callback(t.common.btnStartGame, 'start_undercover')],
@@ -110,7 +110,7 @@ bot.catch(async (err, ctx) => {
   logger.error({ err: errMsg(err) }, 'Bot error');
   try {
     const chatId = ctx.chat?.id;
-    const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru';
+    const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en';
     await ctx.reply(getTexts(lang).errors.generic);
   } catch {
     // ignore secondary failure
@@ -142,6 +142,33 @@ bot.command(['play', 'playgg'], async (ctx, next) => {
   }
 
   return next();
+});
+
+bot.command('help', async (ctx) => {
+  const chatId = ctx.chat?.id;
+  const userId = ctx.from?.id;
+  const userLang = userId != null ? await getUserLanguage(userId) : undefined;
+  const lang: LanguageCode = userLang ?? (typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en');
+  const t = getTexts(lang);
+  const botUsername = ctx.botInfo?.username ?? 'Blink_AIgames_bot';
+  const addToGroupUrl = `https://t.me/${botUsername}?startgroup=true`;
+  const kb = Markup.inlineKeyboard([
+    [Markup.button.url(t.mainMenu.btnAddToGroup, addToGroupUrl)],
+  ]);
+  await ctx.reply(t.mainMenu.helpText, { parse_mode: 'HTML', reply_markup: kb.reply_markup });
+});
+
+bot.command('language', async (ctx) => {
+  const chatId = ctx.chat?.id;
+  if (typeof chatId !== 'number') return;
+  const lang = await getChatLanguage(chatId);
+  const t = getTexts(lang);
+  const buttons = LANGUAGE_OPTIONS.map((opt) =>
+    Markup.button.callback(`${opt.flag} ${opt.label}`, `set_lang_${opt.code}`),
+  );
+  const rows = chunk(buttons, 2);
+  const kb = Markup.inlineKeyboard(rows);
+  await ctx.reply(t.i18n.chooseLanguage, kb);
 });
 
 bot.command('start', async (ctx, next) => {
@@ -327,7 +354,7 @@ bot.action(/^set_lang_(ru|en|zh)$/, async (ctx) => {
 
 bot.action(`${MENU_CB_PREFIX}cancel_main_menu`, async (ctx) => {
   const chatId = ctx.chat?.id;
-  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru';
+  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en';
   const t = getTexts(lang);
   try {
     await ctx.answerCbQuery(t.mainMenu.cancelAnswer);
@@ -348,7 +375,7 @@ bot.action(`${MENU_CB_PREFIX}cancel_main_menu`, async (ctx) => {
 
 bot.action(/^(intro_undercover|open_language_menu|cancel_main_menu)$/, async (ctx) => {
   const chatId = ctx.chat?.id;
-  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'ru';
+  const lang = typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en';
   await ctx.answerCbQuery(getTexts(lang).mainMenu.usePlayggForLatestMenu);
 });
 
@@ -379,7 +406,14 @@ async function start() {
         res.end('ok');
         return;
       }
-      if (req.url === '/stats' && req.method === 'GET') {
+      if (req.url?.startsWith('/stats') && req.method === 'GET') {
+        const statsSecret = process.env.STATS_SECRET || 'spyme2026';
+        const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        if (url.searchParams.get('key') !== statsSecret) {
+          res.writeHead(403);
+          res.end('Forbidden');
+          return;
+        }
         getStats().then((s) => {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify(s));

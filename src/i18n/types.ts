@@ -19,6 +19,8 @@ export interface I18nTexts {
     btnTruthOrDare?: string;
     /** 添加到群组按钮 */
     btnAddToGroup: string;
+    /** /help 命令回复 */
+    helpText: string;
   };
   errors: {
     generic: string;

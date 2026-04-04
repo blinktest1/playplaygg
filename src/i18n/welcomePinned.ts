@@ -14,7 +14,7 @@ export const WELCOME_PINNED_MSG: Record<LanguageCode, string> = {
 🕵️ 谁是卧底 · 🎯 真心话大冒险 · 📝 匿名大字报`,
 };
 
-const FALLBACK_LANG: LanguageCode = 'ru';
+const FALLBACK_LANG: LanguageCode = 'en';
 
 export function resolveLangFromTelegram(languageCode?: string | null): LanguageCode {
   if (!languageCode || typeof languageCode !== 'string') return FALLBACK_LANG;

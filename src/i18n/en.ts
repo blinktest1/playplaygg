@@ -16,6 +16,17 @@ export const enTexts: I18nTexts = {
     btnTruthOrDare: '🎯 Truth or Dare',
     btnAddToGroup: '➕ Add to Group',
     btnLanguage: '🌐 Language',
+    helpText:
+      '🎮 <b>Spy Me — How to Play</b>\n\n' +
+      '🕵️ <b>Undercover</b>\n' +
+      'Everyone gets a secret word — spies get a slightly different one. Describe your word, find the liar, vote them out!\n' +
+      '👥 5–12 players\n\n' +
+      '🎯 <b>Truth or Dare</b>\n' +
+      'Pick a mode, take turns choosing truth or dare. Skip if you chicken out 🐔\n' +
+      '👥 2–20 players\n\n' +
+      '📝 <b>Anonymous Wall</b>\n' +
+      'Post anonymous messages to the group. Say what you really think 👀\n\n' +
+      '➡️ In a group, send /play to start!',
   },
   errors: {
     generic: '⚠️ Something went wrong. Please try again later.',

@@ -22,7 +22,7 @@ function defaultChatState(chatId: number): ChatState {
     chatId,
     currentGame: null,
     phase: 'idle',
-    data: { lang: 'ru' },
+    data: { lang: 'en' },
   };
 }
 
@@ -65,7 +65,7 @@ export async function getChatLanguage(chatId: number): Promise<LanguageCode> {
   const state = await getOrCreateChatState(chatId);
   const lang = state.data?.['lang'];
   if (lang && ALLOWED_LANGS.includes(lang as LanguageCode)) return lang as LanguageCode;
-  return 'ru';
+  return 'en';
 }
 
 export async function setChatLanguage(chatId: number, lang: LanguageCode): Promise<void> {
