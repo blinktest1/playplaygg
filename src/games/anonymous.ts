@@ -202,10 +202,13 @@ async function launchAnonymousWall(bot: Telegraf<Context>, chatId: number, topic
   const botInfo = await bot.telegram.getMe();
   const deepLink = `https://t.me/${botInfo.username}?start=anon_${chatId}`;
 
+  const kb = Markup.inlineKeyboard([
+    [Markup.button.url(t.anonymous.btnOpenDM, deepLink)],
+  ]);
   await bot.telegram.sendMessage(
     chatId,
-    t.anonymous.wallActive(topic, deepLink),
-    { parse_mode: 'HTML' },
+    t.anonymous.wallActive(topic),
+    { parse_mode: 'HTML', reply_markup: kb.reply_markup },
   );
   trackGroupMessage();
 }

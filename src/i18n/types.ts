@@ -192,7 +192,8 @@ export interface I18nTexts {
     topicCompliment: string;
     topicRant: string;
     topicDream: string;
-    wallActive: (topic: string, link: string) => string;
+    wallActive: (topic: string) => string;
+    btnOpenDM: string;
     privateIntro: (topic: string) => string;
     forwarded: (topic: string, text: string) => string;
     sent: string;

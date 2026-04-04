@@ -168,13 +168,11 @@ export const zhTexts: I18nTexts = {
     topicCompliment: '🌸 夸夸墙',
     topicRant: '⚡ 发疯吐槽',
     topicDream: '🌙 暗恋 / 心事',
-    wallActive: (topic: string, link: string) =>
-      `📝 <b>匿名大字报已开启</b> — <i>${topic}</i>\n\n` +
-      `1. 点下面这个私聊链接\n` +
-      `2. 把匿名内容发给我\n` +
-      `3. 我会匿名转发到群里\n\n` +
-      `👉 <a href="${link}">点我私聊匿名发言</a>\n\n` +
-      `⚠️ 直接发在群里的消息 <b>不是匿名</b>。\n发送 /quit 可关闭大字报。`,
+    wallActive: (topic: string) =>
+      `📝 <b>匿名大字报已开启！</b> — <i>${topic}</i>\n\n` +
+      `点下方按钮 → 私聊我发内容 → 我匿名转发到群里。\n\n` +
+      `⚠️ 直接发在群里的消息 <b>不是匿名的</b>，一定要用按钮！\n发送 /quit 可关闭。`,
+    btnOpenDM: '✉️ 匿名发言',
     privateIntro: (topic: string) =>
       `📝 当前话题：<b>${topic}</b>\n\n现在把你想匿名发到群里的内容发给我，我会隐藏你的名字转发过去 🤫`,
     forwarded: (topic: string, text: string) =>

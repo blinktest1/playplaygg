@@ -168,13 +168,11 @@ export const enTexts: I18nTexts = {
     topicCompliment: '🌸 Compliments',
     topicRant: '⚡ Rant',
     topicDream: '🌙 Dream / Crush',
-    wallActive: (topic: string, link: string) =>
-      `📝 <b>Anonymous Wall is live</b> — <i>${topic}</i>\n\n` +
-      `1. Tap the private link below\n` +
-      `2. Send me your message in DM\n` +
-      `3. I will post it anonymously to the group\n\n` +
-      `👉 <a href="${link}">Open DM to send anonymously</a>\n\n` +
-      `⚠️ Messages typed directly in the group are <b>not anonymous</b>.\nSend /quit to close the wall.`,
+    wallActive: (topic: string) =>
+      `📝 <b>Anonymous Wall is live!</b> — <i>${topic}</i>\n\n` +
+      `Tap the button below → DM me your message → I post it here anonymously.\n\n` +
+      `⚠️ Messages in the group are <b>NOT</b> anonymous. Use the button!\nSend /quit to close.`,
+    btnOpenDM: '✉️ Send Anonymous Message',
     privateIntro: (topic: string) =>
       `📝 Topic: <b>${topic}</b>\n\nNow send me the message you want to post anonymously. I will forward it to the group without your name 🤫`,
     forwarded: (topic: string, text: string) =>
