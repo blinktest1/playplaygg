@@ -14,6 +14,7 @@ export const zhTexts: I18nTexts = {
     privatePlayggHint: '🎮 请将我拉入群组，在群内发送 /play 开始游戏！',
     groupUsePlaygg: '👉 群里请用 /play 唤出菜单。',
     btnTruthOrDare: '🎯 真心话大冒险',
+    btnAnonymous: '📝 匿名大字报',
     btnAddToGroup: '➕ 拉进群聊',
     btnLanguage: '🌐 语言',
     helpText:
@@ -158,5 +159,25 @@ export const zhTexts: I18nTexts = {
     gameStarted: (count: number, tierLabel: string) => `🎯 真心话大冒险开始！${count} 人参加。模式：${tierLabel}`,
     gameEnded: '🎯 真心话大冒险结束，下次再玩！',
     timeoutSkipped: (name: string) => `⏱ ${name} 超时，自动跳过`,
+  },
+  anonymous: {
+    chooseTopic: '📝 <b>匿名大字报</b>\n\n选个话题：',
+    topicConfess: '💌 表白墙',
+    topicRoast: '🔥 吐槽大会',
+    topicSecret: '🤫 说出秘密',
+    topicCustom: '✏️ 自定义',
+    askCustomTopic: '输入匿名大字报的话题：',
+    wallActive: (topic: string, link: string) =>
+      `📝 <b>匿名大字报</b> — <i>${topic}</i>\n\n` +
+      `点击下方链接，私聊我发送你的匿名消息：\n` +
+      `👉 <a href="${link}">匿名发言</a>\n\n` +
+      `发送 /quit 关闭大字报。`,
+    privateIntro: (topic: string) =>
+      `📝 话题：<b>${topic}</b>\n\n把你想说的发给我，我会匿名转发到群里。没人会知道是你 🤫`,
+    forwarded: (topic: string, text: string) =>
+      `📝 <b>匿名大字报</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
+    sent: '✅ 已匿名发送！',
+    notActive: '匿名大字报当前未开启。',
+    ended: '📝 匿名大字报已关闭。感谢分享！🙌',
   },
 };

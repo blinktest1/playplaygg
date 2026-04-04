@@ -17,6 +17,8 @@ export interface I18nTexts {
     groupUsePlaygg: string;
     /** 真心话大冒险主菜单按钮 */
     btnTruthOrDare?: string;
+    /** 匿名大字报主菜单按钮 */
+    btnAnonymous?: string;
     /** 添加到群组按钮 */
     btnAddToGroup: string;
     /** /help 命令回复 */
@@ -180,5 +182,20 @@ export interface I18nTexts {
     gameStarted: (count: number, tierLabel: string) => string;
     gameEnded: string;
     timeoutSkipped: (name: string) => string;
+  };
+
+  anonymous: {
+    chooseTopic: string;
+    topicConfess: string;
+    topicRoast: string;
+    topicSecret: string;
+    topicCustom: string;
+    askCustomTopic: string;
+    wallActive: (topic: string, link: string) => string;
+    privateIntro: (topic: string) => string;
+    forwarded: (topic: string, text: string) => string;
+    sent: string;
+    notActive: string;
+    ended: string;
   };
 }

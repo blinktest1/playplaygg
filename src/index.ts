@@ -15,6 +15,7 @@ import {
 } from './state';
 import { registerUndercover } from './games/undercover';
 import { registerTruthOrDare } from './games/truthordare';
+import { registerAnonymous } from './games/anonymous';
 import { seedAllLanguages } from './games/undercover/wordStore';
 import { logger, errMsg } from './logger';
 import { patchBotWithRateLimiter } from './rateLimiterPatch';
@@ -51,6 +52,7 @@ function getMainMenuKeyboard(t: ReturnType<typeof getTexts>) {
     [Markup.button.callback(t.mainMenu.btnLanguage, `${MENU_CB_PREFIX}open_language_menu`)],
     [Markup.button.callback(t.mainMenu.btnUndercover, `${MENU_CB_PREFIX}intro_undercover`)],
     [Markup.button.callback(t.mainMenu.btnTruthOrDare ?? '🎯 真心话大冒险', 'start_tod')],
+    [Markup.button.callback(t.mainMenu.btnAnonymous ?? '📝 Anonymous Wall', 'start_anonymous')],
     [Markup.button.callback(t.mainMenu.btnCancel, `${MENU_CB_PREFIX}cancel_main_menu`)],
   ]);
 }
@@ -281,6 +283,7 @@ bot.on('message', async (ctx, next) => {
 
 registerUndercover(bot);
 registerTruthOrDare(bot);
+registerAnonymous(bot);
 
 bot.action(`${MENU_CB_PREFIX}intro_undercover`, async (ctx) => {
   await ctx.answerCbQuery();

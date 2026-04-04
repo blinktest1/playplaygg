@@ -14,6 +14,7 @@ export const enTexts: I18nTexts = {
     privatePlayggHint: '🎮 Please add me to your group and send /play there to start playing!',
     groupUsePlaygg: '👉 In the group, use /play to open the game menu.',
     btnTruthOrDare: '🎯 Truth or Dare',
+    btnAnonymous: '📝 Anonymous Wall',
     btnAddToGroup: '➕ Add to Group',
     btnLanguage: '🌐 Language',
     helpText:
@@ -158,5 +159,25 @@ export const enTexts: I18nTexts = {
     gameStarted: (count: number, tierLabel: string) => `🎯 Truth or Dare started! ${count} players. Mode: ${tierLabel}`,
     gameEnded: '🎯 Truth or Dare ended. Play again next time!',
     timeoutSkipped: (name: string) => `⏱ ${name} timed out, skipping`,
+  },
+  anonymous: {
+    chooseTopic: '📝 <b>Anonymous Wall</b>\n\nPick a topic:',
+    topicConfess: '💌 Confessions',
+    topicRoast: '🔥 Roast',
+    topicSecret: '🤫 Secrets',
+    topicCustom: '✏️ Custom',
+    askCustomTopic: 'Type the topic for the anonymous wall:',
+    wallActive: (topic: string, link: string) =>
+      `📝 <b>Anonymous Wall</b> — <i>${topic}</i>\n\n` +
+      `Tap the link below, then DM me your anonymous message:\n` +
+      `👉 <a href="${link}">Send anonymously</a>\n\n` +
+      `Send /quit to close the wall.`,
+    privateIntro: (topic: string) =>
+      `📝 Topic: <b>${topic}</b>\n\nSend me your message — I'll post it anonymously to the group. No one will know it's you 🤫`,
+    forwarded: (topic: string, text: string) =>
+      `📝 <b>Anonymous Wall</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
+    sent: '✅ Sent anonymously!',
+    notActive: 'The anonymous wall is not active right now.',
+    ended: '📝 Anonymous Wall closed. Thanks for sharing! 🙌',
   },
 };

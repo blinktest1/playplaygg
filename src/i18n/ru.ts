@@ -14,6 +14,7 @@ export const ruTexts: I18nTexts = {
     privatePlayggHint: '🎮 Добавьте меня в группу и отправьте /play!',
     groupUsePlaygg: '👉 В группе: /play для меню игр.',
     btnTruthOrDare: '🎯 Правда или Действие',
+    btnAnonymous: '📝 Анонимная стена',
     btnAddToGroup: '➕ Добавить в группу',
     btnLanguage: '🌐 Язык',
     helpText:
@@ -158,5 +159,25 @@ export const ruTexts: I18nTexts = {
     gameStarted: (count: number, tierLabel: string) => `🎯 Правда или Действие! Игроков: ${count}. Режим: ${tierLabel}`,
     gameEnded: '🎯 Правда или Действие завершена. До следующего раза!',
     timeoutSkipped: (name: string) => `⏱ ${name} — время вышло, пропуск`,
+  },
+  anonymous: {
+    chooseTopic: '📝 <b>Анонимная стена</b>\n\nВыберите тему:',
+    topicConfess: '💌 Признания',
+    topicRoast: '🔥 Жёсткий юмор',
+    topicSecret: '🤫 Секреты',
+    topicCustom: '✏️ Своя тема',
+    askCustomTopic: 'Напишите тему для анонимной стены:',
+    wallActive: (topic: string, link: string) =>
+      `📝 <b>Анонимная стена</b> — <i>${topic}</i>\n\n` +
+      `Нажмите на ссылку и отправьте мне сообщение в личку:\n` +
+      `👉 <a href="${link}">Написать анонимно</a>\n\n` +
+      `Отправьте /quit, чтобы закрыть стену.`,
+    privateIntro: (topic: string) =>
+      `📝 Тема: <b>${topic}</b>\n\nНапишите сообщение — я отправлю его анонимно в группу. Никто не узнает, что это вы 🤫`,
+    forwarded: (topic: string, text: string) =>
+      `📝 <b>Анонимная стена</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
+    sent: '✅ Отправлено анонимно!',
+    notActive: 'Анонимная стена сейчас не активна.',
+    ended: '📝 Анонимная стена закрыта. Спасибо за участие! 🙌',
   },
 };
