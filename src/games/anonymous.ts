@@ -11,6 +11,7 @@ import { logger, errMsg } from '../logger';
 import { trackGroupMessage } from '../stats';
 import { generateAnonCard, clampAnonMessage } from './anonCard';
 import { delAnonSession, getAnonSession, setAnonSession } from '../state/anonSessions';
+import { canStartGame } from '../gameGate';
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,11 @@ export function registerAnonymous(bot: Telegraf<Context>) {
       const chatId = ctx.chat.id;
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
+
+      if (!(await canStartGame(chatId, 'anonymous'))) {
+        await ctx.reply(t.common.busyWithAnotherGame);
+        return;
+      }
 
       try { await ctx.editMessageReplyMarkup(undefined); } catch {}
 

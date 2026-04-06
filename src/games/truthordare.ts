@@ -1,1 +1,1 @@
-export { registerTruthOrDare } from './truthordare/handler';
+export { registerTruthOrDare, getActiveTodSession } from './truthordare/handler';

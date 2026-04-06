@@ -37,6 +37,7 @@ export const enTexts: I18nTexts = {
     btnStartGame: '▶ Start game',
     roomFull: (used: number, max: number) => `Game rooms are full: ${used}/${max}. Try again later.`,
     roomClosedOrNotFound: 'This room is closed or does not exist.',
+    busyWithAnotherGame: 'Another game is already running in this group. Finish it first.',
     linkExpiredGameStarted: 'The game has already started. This link is no longer valid.',
     roomLabel: (roomId: number) => `🎪 Room ${roomId}`,
   },

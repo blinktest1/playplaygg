@@ -37,6 +37,7 @@ export const zhTexts: I18nTexts = {
     btnStartGame: '▶ 开始游戏',
     roomFull: (used: number, max: number) => `房间已满：${used}/${max}，请稍后再试。`,
     roomClosedOrNotFound: '房间已关闭或不存在。',
+    busyWithAnotherGame: '这个群里已经有另一场游戏在进行中，请先结束当前游戏。',
     linkExpiredGameStarted: '游戏已开始，链接失效。',
     roomLabel: (roomId: number) => `🎪 ${roomId}号房`,
   },

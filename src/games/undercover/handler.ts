@@ -18,6 +18,7 @@ import {
   timerKey,
 } from './engine';
 import { buildGroupReturnLink, sendRoomMessage } from './messages';
+import { canStartGame } from '../../gameGate';
 
 // ─── Polling (restart recovery) ───────────────────────────────────────────────
 
@@ -150,6 +151,11 @@ export function registerUndercover(bot: Telegraf<Context>) {
       const chatId = ctx.chat.id;
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
+
+      if (!(await canStartGame(chatId, 'undercover'))) {
+        await ctx.reply(t.common.busyWithAnotherGame);
+        return;
+      }
 
       if (!(await tryAcquireRoom(chatId, 'undercover'))) {
         const usage = await getChatRoomUsage(chatId);

@@ -19,12 +19,13 @@ import {
   type TodSession,
 } from './types';
 import { trackGameStart, trackGroupMessage } from '../../stats';
+import { canStartGame } from '../../gameGate';
 
 // ─── In-memory session store ─────────────────────────────────────────────────
 
 const sessions = new Map<number, TodSession>();
 
-function getSession(chatId: number): TodSession | undefined {
+export function getActiveTodSession(chatId: number): TodSession | undefined {
   const s = sessions.get(chatId);
   if (!s || !s.active) return undefined;
   if (Date.now() - s.lastActivity > TOD_SESSION_TIMEOUT_MS) {
@@ -44,7 +45,7 @@ async function askCurrentPlayer(
   bot: Telegraf<Context>,
   chatId: number,
 ): Promise<void> {
-  const session = getSession(chatId);
+  const session = getActiveTodSession(chatId);
   if (!session) return;
 
   const lang = await getChatLanguage(chatId);
@@ -79,7 +80,7 @@ async function askCurrentPlayer(
   );
 
   setChatTimeout(chatId, `tod_answer`, () => {
-    const s = getSession(chatId);
+    const s = getActiveTodSession(chatId);
     if (!s) return;
     s.currentIndex += 1;
     void (async () => {
@@ -100,7 +101,7 @@ async function askCurrentPlayer(
 export function registerTruthOrDare(bot: Telegraf<Context>) {
 
   // Periodic cleanup: purge stale sessions every 5 minutes to prevent memory leak.
-  // getSession() only cleans on access; sessions abandoned without interaction stay forever.
+  // getActiveTodSession() only cleans on access; sessions abandoned without interaction stay forever.
   const cleanupInterval = setInterval(() => {
     const now = Date.now();
     for (const [chatId, s] of sessions) {
@@ -125,6 +126,11 @@ export function registerTruthOrDare(bot: Telegraf<Context>) {
       const chatId = ctx.chat.id;
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
+
+      if (!(await canStartGame(chatId, 'truthordare'))) {
+        await ctx.reply(t.common.busyWithAnotherGame);
+        return;
+      }
 
       const existing = sessions.get(chatId);
       if (existing) {
@@ -322,7 +328,7 @@ export function registerTruthOrDare(bot: Telegraf<Context>) {
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
 
-      const session = getSession(chatId);
+      const session = getActiveTodSession(chatId);
       if (!session) {
         await ctx.answerCbQuery(t.truthOrDare.sessionEnded, { show_alert: false });
         return;
@@ -369,7 +375,7 @@ export function registerTruthOrDare(bot: Telegraf<Context>) {
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
 
-      const session = getSession(chatId);
+      const session = getActiveTodSession(chatId);
       if (!session) {
         await ctx.answerCbQuery(t.truthOrDare.sessionEnded, { show_alert: false });
         return;
@@ -399,7 +405,7 @@ export function registerTruthOrDare(bot: Telegraf<Context>) {
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
 
-      const session = getSession(chatId);
+      const session = getActiveTodSession(chatId);
       if (!session) {
         await ctx.answerCbQuery(t.truthOrDare.sessionEnded, { show_alert: false });
         return;
@@ -429,7 +435,7 @@ export function registerTruthOrDare(bot: Telegraf<Context>) {
       const lang = await getChatLanguage(chatId);
       const t = getTexts(lang);
 
-      const session = getSession(chatId);
+      const session = getActiveTodSession(chatId);
       if (!session) {
         await ctx.answerCbQuery(t.truthOrDare.sessionEnded, { show_alert: false });
         return;

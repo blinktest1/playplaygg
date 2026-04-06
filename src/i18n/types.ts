@@ -32,6 +32,7 @@ export interface I18nTexts {
     btnStartGame: string;
     roomFull: (used: number, max: number) => string;
     roomClosedOrNotFound: string;
+    busyWithAnotherGame: string;
     /** 通过链接加入时：游戏已开始，链接失效（适用于所有房间链接类游戏） */
     linkExpiredGameStarted: string;
     /** 房间标签，用于本场游戏所有群发消息前缀。N 由房间链接中的 roomId 决定 */

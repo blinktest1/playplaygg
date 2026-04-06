@@ -12,6 +12,7 @@ const { clampAnonMessage, generateAnonCard } = await import('../dist/games/anonC
 const state = await import('../dist/state.js');
 const anonSessions = await import('../dist/state/anonSessions.js');
 const redisClient = await import('../dist/state/redisClient.js');
+const gameGate = await import('../dist/gameGate.js');
 
 async function testAnonClampAndCard() {
   const input = 'a'.repeat(900);
@@ -62,12 +63,28 @@ async function testAnonSessionPersistence() {
   console.log('✓ anon DM session persistence');
 }
 
+async function testGameGate() {
+  const chatId = 991234322;
+  await state.replaceChatState({
+    chatId,
+    currentGame: 'anonymous',
+    phase: 'in_game',
+    data: { lang: 'en', anonTopic: 'x' },
+  });
+  assert.equal(await gameGate.getRunningGame(chatId), 'anonymous');
+  assert.equal(await gameGate.canStartGame(chatId, 'truthordare'), false);
+  assert.equal(await gameGate.canStartGame(chatId, 'anonymous'), true);
+  await state.resetChatState(chatId);
+  console.log('✓ game gate blocks overlapping games');
+}
+
 async function main() {
   try {
     await redisClient.connectRedis().catch(() => {});
     await testAnonClampAndCard();
     await testReplaceChatState();
     await testAnonSessionPersistence();
+    await testGameGate();
     console.log('SMOKE_OK');
   } finally {
     await redisClient.closeRedis().catch(() => {});

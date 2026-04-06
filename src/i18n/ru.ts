@@ -37,6 +37,7 @@ export const ruTexts: I18nTexts = {
     btnStartGame: '▶ Начать игру',
     roomFull: (used: number, max: number) => `Комнаты заполнены: ${used}/${max}. Попробуйте позже.`,
     roomClosedOrNotFound: 'Комната закрыта или не существует.',
+    busyWithAnotherGame: 'В этом чате уже идёт другая игра. Сначала закончите её.',
     linkExpiredGameStarted: 'Игра уже началась. Ссылка недействительна.',
     roomLabel: (roomId: number) => `🎪 Комната ${roomId}`,
   },
