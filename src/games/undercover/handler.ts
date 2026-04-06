@@ -69,6 +69,69 @@ function startUndercoverPolling(bot: Telegraf<Context>) {
   }, INTERVAL_MS);
 }
 
+// ─── deep-link join handler ──────────────────────────────────────────────────
+
+export async function handleUndercoverStart(ctx: Context, bot: Telegraf<Context>, payload: string): Promise<boolean> {
+  if (!payload.startsWith('undercover_')) return false;
+
+  try {
+    const parts = payload.split('_');
+    const chatId = Number(parts[1]);
+    const roomId = Number(parts[2]);
+    const lang = await getChatLanguage(chatId);
+    const t = getTexts(lang);
+
+    if (!Number.isFinite(chatId) || !Number.isFinite(roomId)) {
+      await ctx.reply(t.common.roomClosedOrNotFound);
+      return true;
+    }
+
+    const room = await getRoom(chatId, roomId);
+    if (!room?.active) { await ctx.reply(t.common.roomClosedOrNotFound); return true; }
+    if (room.state.phase !== 'waiting') { await ctx.reply(t.undercover.linkExpiredGameStarted); return true; }
+
+    const from = ctx.from;
+    if (!from) { await ctx.reply(t.errors.generic); return true; }
+
+    const groupLink = buildGroupReturnLink(room);
+    const joinMsg =
+      t.undercover.joinSuccessWithReturnLink?.(groupLink) ??
+      `${t.undercover.joinSuccess}\n返回组群 👉 <a href="${groupLink}">点击返回</a>`;
+
+    if (room.state.players.find((p) => p.userId === from.id)) {
+      await ctx.reply(joinMsg, { parse_mode: 'HTML' });
+      return true;
+    }
+    if (room.state.players.length >= MAX_PLAYERS) {
+      await ctx.reply(t.undercover.linkExpiredRoomFull(MAX_PLAYERS));
+      return true;
+    }
+
+    room.state.players.push({
+      userId: from.id,
+      name: from.first_name || from.last_name || from.username || '?',
+      username: from.username,
+      alive: true,
+    });
+    await saveRoom(room);
+    await ctx.reply(joinMsg, { parse_mode: 'HTML' });
+
+    const t2 = getTexts(await getChatLanguage(chatId));
+    const names = room.state.players.map((p) => p.name).join(', ');
+    await bot.telegram.sendMessage(
+      chatId,
+      t2.undercover.currentRoomPlayers(room.roomId, room.state.players.length, names),
+    );
+    return true;
+  } catch (err) {
+    logger.error({ err: errMsg(err) }, '处理 /start 报名异常');
+    const chatId = ctx.chat?.id;
+    const tErr = getTexts(typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en');
+    await ctx.reply(tErr.errors.generic);
+    return true;
+  }
+}
+
 // ─── registerUndercover ───────────────────────────────────────────────────────
 
 export function registerUndercover(bot: Telegraf<Context>) {
@@ -165,73 +228,7 @@ export function registerUndercover(bot: Telegraf<Context>) {
     }
   });
 
-  // 私聊 /start 报名
-  bot.start(async (ctx) => {
-    const rawPayload =
-      ctx.startPayload ??
-      ('text' in (ctx.message || {})
-        ? String((ctx.message as { text?: string }).text || '')
-            .replace(/^\/start\s*/, '')
-            .trim()
-        : '');
-    const payload = rawPayload || '';
-    if (!payload.startsWith('undercover_')) return;  // other bot.start handlers will be tried by Telegraf
-
-    try {
-      const parts = payload.split('_');
-      const chatId = Number(parts[1]);
-      const roomId = Number(parts[2]);
-      const lang = await getChatLanguage(chatId);
-      const t = getTexts(lang);
-
-      if (!Number.isFinite(chatId) || !Number.isFinite(roomId)) {
-        await ctx.reply(t.common.roomClosedOrNotFound);
-        return;
-      }
-
-      const room = await getRoom(chatId, roomId);
-      if (!room?.active) { await ctx.reply(t.common.roomClosedOrNotFound); return; }
-      if (room.state.phase !== 'waiting') { await ctx.reply(t.undercover.linkExpiredGameStarted); return; }
-
-      const from = ctx.from;
-      if (!from) { await ctx.reply(t.errors.generic); return; }
-
-      const groupLink = buildGroupReturnLink(room);
-      const joinMsg =
-        t.undercover.joinSuccessWithReturnLink?.(groupLink) ??
-        `${t.undercover.joinSuccess}\n返回组群 👉 <a href="${groupLink}">点击返回</a>`;
-
-      if (room.state.players.find((p) => p.userId === from.id)) {
-        await ctx.reply(joinMsg, { parse_mode: 'HTML' });
-        return;
-      }
-      if (room.state.players.length >= MAX_PLAYERS) {
-        await ctx.reply(t.undercover.linkExpiredRoomFull(MAX_PLAYERS));
-        return;
-      }
-
-      room.state.players.push({
-        userId: from.id,
-        name: from.first_name || from.last_name || from.username || '?',
-        username: from.username,
-        alive: true,
-      });
-      await saveRoom(room);
-      await ctx.reply(joinMsg, { parse_mode: 'HTML' });
-
-      const t2 = getTexts(await getChatLanguage(chatId));
-      const names = room.state.players.map((p) => p.name).join(', ');
-      await bot.telegram.sendMessage(
-        chatId,
-        t2.undercover.currentRoomPlayers(room.roomId, room.state.players.length, names),
-      );
-    } catch (err) {
-      logger.error({ err: errMsg(err) }, '处理 /start 报名异常');
-      const chatId = ctx.chat?.id;
-      const tErr = getTexts(typeof chatId === 'number' ? await getChatLanguage(chatId) : 'en');
-      await ctx.reply(tErr.errors.generic);
-    }
-  });
+  // /start deep-link join is handled centrally from index.ts via handleUndercoverStart().
 
   // 结束发言（仅当前发言人）
   bot.action(/^undercover_skip_turn_(-?\d+)_(\d+)$/, async (ctx) => {

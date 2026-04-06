@@ -13,7 +13,7 @@ import {
   setUserLanguage,
   type LanguageCode,
 } from './state';
-import { registerUndercover } from './games/undercover';
+import { registerUndercover, handleUndercoverStart } from './games/undercover';
 import { registerTruthOrDare } from './games/truthordare';
 import { registerAnonymous, handleAnonStart } from './games/anonymous';
 import { seedAllLanguages } from './games/undercover/wordStore';
@@ -195,9 +195,12 @@ bot.command('start', async (ctx, next) => {
     const payload = ((ctx as any).startPayload as string | undefined) || payloadFromText;
 
     if (payload && payload.length > 0) {
-      // Handle anon_ deep links directly (undercover handler doesn't next())
       if (payload.startsWith('anon_')) {
         await handleAnonStart(ctx, payload);
+        return;
+      }
+      if (payload.startsWith('undercover_')) {
+        await handleUndercoverStart(ctx, bot, payload);
         return;
       }
       return next();

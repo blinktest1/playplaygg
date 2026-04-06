@@ -5,16 +5,12 @@
  * 发 /quit 结束收集
  */
 import { Context, Markup, Telegraf } from 'telegraf';
-import { getChatLanguage, getOrCreateChatState, setChatState, resetChatState } from '../state';
+import { getChatLanguage, getOrCreateChatState, replaceChatState, resetChatState } from '../state';
 import { getTexts } from '../i18n';
 import { logger, errMsg } from '../logger';
 import { trackGroupMessage } from '../stats';
-import { LruMap } from '../lruMap';
 import { generateAnonCard, clampAnonMessage } from './anonCard';
-
-// ─── In-memory session: userId → target chatId for anonymous forwarding ──────
-
-const anonSessions = new LruMap<number, { chatId: number; topic: string }>(10_000);
+import { delAnonSession, getAnonSession, setAnonSession } from '../state/anonSessions';
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
@@ -114,7 +110,7 @@ export function registerAnonymous(bot: Telegraf<Context>) {
     const userId = ctx.from?.id;
     if (!userId) return next();
 
-    const session = anonSessions.get(userId);
+    const session = await getAnonSession(userId);
     if (!session) return next();
 
     const text = 'text' in ctx.message ? ctx.message.text : '';
@@ -128,7 +124,7 @@ export function registerAnonymous(bot: Telegraf<Context>) {
       const state = await getOrCreateChatState(session.chatId);
       if (state.currentGame !== 'anonymous' || state.phase !== 'in_game') {
         await ctx.reply(t.anonymous.notActive);
-        anonSessions.delete(userId);
+        await delAnonSession(userId);
         return;
       }
 
@@ -184,7 +180,7 @@ export async function handleAnonStart(ctx: Context, payload: string): Promise<bo
     const userId = ctx.from?.id;
     if (!userId) return true;
 
-    anonSessions.set(userId, { chatId, topic });
+    await setAnonSession(userId, { chatId, topic });
     await ctx.reply(t.anonymous.privateIntro(topic), { parse_mode: 'HTML' });
     return true;
   } catch (err) {
@@ -197,10 +193,11 @@ async function launchAnonymousWall(bot: Telegraf<Context>, chatId: number, topic
   const lang = await getChatLanguage(chatId);
   const t = getTexts(lang);
 
-  await setChatState(chatId, {
+  await replaceChatState({
+    chatId,
     currentGame: 'anonymous',
     phase: 'in_game',
-    data: { anonTopic: topic },
+    data: { lang, anonTopic: topic },
   });
 
   const botInfo = await bot.telegram.getMe();

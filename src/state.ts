@@ -94,19 +94,23 @@ export async function setUserLanguage(userId: number, lang: LanguageCode): Promi
   }
 }
 
+export async function replaceChatState(next: ChatState): Promise<ChatState> {
+  if (config.useRedis) {
+    await store.storeSetChatState(next);
+  } else {
+    chatStates.set(next.chatId, next);
+  }
+  return next;
+}
+
 export async function resetChatState(chatId: number): Promise<void> {
   const lang = await getChatLanguage(chatId);
-  const next: ChatState = {
+  await replaceChatState({
     chatId,
     currentGame: null,
     phase: 'idle',
     data: { lang },
-  };
-  if (config.useRedis) {
-    await store.storeSetChatState(next);
-  } else {
-    chatStates.set(chatId, next);
-  }
+  });
 }
 
 export async function clearAllStates(): Promise<void> {

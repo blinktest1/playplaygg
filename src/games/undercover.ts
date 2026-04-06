@@ -8,4 +8,4 @@
  *
  * 此文件仅做统一 re-export，保持 index.ts 中的 import 路径不变。
  */
-export { registerUndercover } from './undercover/handler';
+export { registerUndercover, handleUndercoverStart } from './undercover/handler';
