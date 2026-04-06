@@ -27,7 +27,7 @@ export async function getRunningGame(chatId: number): Promise<MainGame | null> {
   return null;
 }
 
-export async function canStartGame(chatId: number, requested: MainGame): Promise<boolean> {
+export async function canStartGame(chatId: number, _requested: MainGame): Promise<boolean> {
   const running = await getRunningGame(chatId);
-  return running == null || running === requested;
+  return running == null;
 }

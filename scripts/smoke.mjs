@@ -73,7 +73,7 @@ async function testGameGate() {
   });
   assert.equal(await gameGate.getRunningGame(chatId), 'anonymous');
   assert.equal(await gameGate.canStartGame(chatId, 'truthordare'), false);
-  assert.equal(await gameGate.canStartGame(chatId, 'anonymous'), true);
+  assert.equal(await gameGate.canStartGame(chatId, 'anonymous'), false);
   await state.resetChatState(chatId);
   console.log('✓ game gate blocks overlapping games');
 }
