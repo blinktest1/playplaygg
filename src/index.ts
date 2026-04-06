@@ -220,41 +220,9 @@ bot.command('start', async (ctx, next) => {
   return next();
 });
 
-bot.on('text', async (ctx, next) => {
-  try {
-    const message = ctx.message;
-    if (!('text' in message)) return next();
-
-    const chatType = ctx.chat?.type;
-    const text = message.text || '';
-
-    const isReplyToBot =
-      'reply_to_message' in message &&
-      message.reply_to_message?.from?.is_bot &&
-      message.reply_to_message.from.id === ctx.botInfo?.id;
-
-    const isMentionBot =
-      Array.isArray(message.entities) &&
-      message.entities.some((e) => {
-        if (e.type !== 'mention') return false;
-        const mentionText = text.slice(e.offset, e.offset + e.length);
-        const botUsername = ctx.botInfo?.username;
-        return botUsername ? mentionText.toLowerCase().includes(botUsername.toLowerCase()) : false;
-      });
-
-    if (chatType === 'group' || chatType === 'supergroup') {
-      if (isReplyToBot || isMentionBot) {
-        await showMainMenu(ctx);
-        return;
-      }
-    }
-
-    return next();
-  } catch (err) {
-    logger.error({ err: errMsg(err) }, 'Text handler error');
-    return next();
-  }
-});
+// Intentionally do NOT open the game menu on @mentions or reply-to-bot.
+// In real group chats, users often reply/quote naturally; hijacking that with a menu is bad UX.
+// Use /play explicitly to open the game menu.
 
 bot.on('message', async (ctx, next) => {
   try {

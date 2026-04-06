@@ -11,6 +11,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@fontsource/noto-sans-sc": "^5.2.9",
     "dotenv": "^16.4.0",
     "ioredis": "^5.10.0",
     "pino": "^9.0.0",
@@ -18,7 +19,7 @@
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.19.39",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }

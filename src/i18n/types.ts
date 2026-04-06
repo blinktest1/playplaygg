@@ -197,6 +197,7 @@ export interface I18nTexts {
     privateIntro: (topic: string) => string;
     forwarded: (topic: string, text: string) => string;
     sent: string;
+    sentTrimmed?: string;
     notActive: string;
     ended: string;
   };

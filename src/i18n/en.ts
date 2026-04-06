@@ -178,6 +178,7 @@ export const enTexts: I18nTexts = {
     forwarded: (topic: string, text: string) =>
       `📝 <b>Anonymous Wall</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
     sent: '✅ Sent anonymously!',
+    sentTrimmed: '✅ Sent anonymously! Your message was a bit long, so I trimmed it to fit the card.',
     notActive: 'The anonymous wall is not active right now.',
     ended: '📝 Anonymous Wall closed. Thanks for sharing! 🙌',
   },

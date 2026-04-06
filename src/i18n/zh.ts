@@ -178,6 +178,7 @@ export const zhTexts: I18nTexts = {
     forwarded: (topic: string, text: string) =>
       `📝 <b>匿名大字报</b> — <i>${topic}</i>\n\n🗣 <i>${text}</i>`,
     sent: '✅ 已匿名发送！',
+    sentTrimmed: '✅ 已匿名发送！但你的内容有点长，我已经帮你截短后做成卡片了。',
     notActive: '匿名大字报当前未开启。',
     ended: '📝 匿名大字报已关闭。感谢分享！🙌',
   },
